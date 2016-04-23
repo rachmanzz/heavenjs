@@ -34,7 +34,6 @@
         this.getGlobal=function(){
             return GLOBALS;
         };
-        console.log(this.getGlobal());
         this.setStorage=function(model,obj){
             storage[model]=obj;
         };
@@ -54,7 +53,7 @@
         var getMatch= function (str,flags) {
             var symbol, Expression, result=null;
             symbol=Opt.syBegin;
-            symbol +="([_a-zA-Z0-9.]+|[a-z.++]+|[a-z.]+\\[\\d+\\]\\+|math\\[[+-/*_a-zA-Z0-9.]+\\]|math\\[[+-/*_a-zA-Z0-9.]+\\]\\([-_a-zA-Z0-9.]+\\)|[a-zA-Z.]+\\[[_a-zA-Z0-9.]+\\]|[a-zA-Z.]+\\[[_a-zA-Z0-9.]+\\]\\([#-:_a-zA-Z0-9.]+\\))";
+            symbol +="([_a-zA-Z0-9.]+|[a-z.++]+|[a-z.]+\\[\\d+\\]\\+|math\\[[()+-/*_a-zA-Z0-9.]+\\]|math\\[[()+-/*_a-zA-Z0-9.]+\\]\\([-_a-zA-Z0-9.]+\\)|[a-zA-Z.]+\\[[_a-zA-Z0-9.]+\\]|[a-zA-Z.]+\\[[_a-zA-Z0-9.]+\\]\\([#-:_a-zA-Z0-9.]+\\))";
             symbol +=Opt.syEnd;
             Expression = typeof flags != 'undefined' ?
                 new RegExp(symbol,flags) :
@@ -108,10 +107,59 @@
                             }
                             convertHtml =convertHtml.replace(val,hasReplace);
                         }
+                        else if((/numberFormat(\[[_a-zA-Z0-9.]+\]|\[[_a-zA-Z0-9.]+\]\([#-_a-zA-Z0-9.]+\))/).test(pattern)){
+                            var getNumberFormat;
+                            if(((/numberFormat(\[[_a-zA-Z0-9.]+\]\([#-_a-zA-Z0-9.]+\))/).test(pattern))){
+                                getNumberFormat=pattern.match(/numberFormat\[([_a-zA-Z0-9.]+)\]\(([#-_a-zA-Z0-9.]+)\)/);
+                                getNumberFormat=new Intl.NumberFormat(getNumberFormat[2]).format(parseInt(value[getNumberFormat[1]]));
+                            }else{
+                                getNumberFormat=pattern.match(/numberFormat\[([_a-zA-Z0-9.]+)\]/);
+                                getNumberFormat=new Intl.NumberFormat().format(parseInt(value[getNumberFormat[1]]));
+                            }
+                            convertHtml =convertHtml.replace(val,getNumberFormat);
+                        }
+                        else if((/math\[[()+-/*_a-zA-Z0-9.]+\]|math\[[()+-/*_a-zA-Z0-9.]+\]\([-_a-zA-Z0-9.]+\)/).test(pattern)){
+                            var result,mathValue= function (mathValue) {
+                                var result=mathValue;
+                                mathValue=mathValue.match(/([_a-zA-Z0-9.]+)/gi);
+                                for(var i=0; i < mathValue.length; i++){
+                                    if(!(/[0-9]+/).test(mathValue[i])){
+                                        result=result.replace(mathValue[i],value[mathValue[i]]);
+                                    }
+                                }
+                                return eval(result);
+                            };
+                            if((/math\[[+-/*_a-zA-Z0-9.]+\]\([-_a-zA-Z0-9.]+\)/).test(pattern)){
+                                result=pattern.match(/math\[([()+-/*_a-zA-Z0-9.]+)\]\(([-_a-zA-Z0-9.]+)\)/);
+                                if(result[2]=='default'){
+                                    result=new Intl.NumberFormat().format(parseInt(mathValue(result[1])));
+                                }else{
+                                    result=new Intl.NumberFormat(result[2]).format(parseInt(mathValue(result[1])));
+                                }
+                            }else{
+                                result=pattern.match(/math\[([()+-/*_a-zA-Z0-9.]+)\]/);
+                                result=mathValue(result[1]);
+                            }
+
+                            convertHtml =convertHtml.replace(val,result);
+                        }
+                        else if((/limitText\[[_a-zA-Z0-9.]+\]\([ #:_a-zA-Z0-9.]+\)/).test(pattern)){
+                            var getAtt, getText=pattern.match(/limitText\[([_a-zA-Z0-9.]+)\]\(([ #:_a-zA-Z0-9.]+)\)/);
+                            if((/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/).test((getText[2]))){
+                                getAtt=(getText[2].match(/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/));
+                                getText=value[getText[1]].substring(getAtt[1],getAtt[2]);
+
+                            }else{
+                                getText=value[getText[1]].substring(0,getText[2]);
+                            }
+                            convertHtml =convertHtml.replace(val,getText);
+                        }
+                        else if(typeof value[pattern]!="undefined"){
+                            convertHtml =convertHtml.replace(val,value[pattern]);
+                        }
                     });
                     modelUri.append(convertHtml);
                 });
-                console.log(html);
             }
         }
     };
