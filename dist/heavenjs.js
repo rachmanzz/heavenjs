@@ -20,79 +20,83 @@
             convertHtml=each.html;
             $.each(each.getMatch(each.html,'gi'), function (key,val) {
                 pattern = each.getMatch(val)[1];
-                if(pattern == 'num++'){
-                    convertHtml=convertHtml.replace(val,each.number++);
-                    each.setStorageAsset({number:each.number});
-                }
-                else if((/num\[\d+\]\+/).test(pattern)){
-                    if(each.hasNumber==false){
-                        each.numberSet=(pattern.match(/num\[(\d+)\]\+/))[1];
-                        each.hasNumber=true;
+                if(typeof each.model != "undefined" && typeof each.model[pattern] != "undefined"){
+                    convertHtml=convertHtml.replace(val,each.model[pattern](value[pattern]));
+                }else{
+                    if(pattern == 'num++'){
+                        convertHtml=convertHtml.replace(val,each.number++);
+                        each.setStorageAsset({number:each.number});
                     }
-                    convertHtml=convertHtml.replace(val,each.numberSet++);
-                    each.setStorageAsset({numberSet:each.numberSet});
-                }
-                else if((/replace\[[_a-zA-Z0-9.]+\]\([ #:_a-zA-Z0-9.]+\)/).test(pattern)){
-                    var getAttribute, hasReplace=(pattern.match(/replace\[([_a-zA-Z0-9.]+)\]\(([ #:_a-zA-Z0-9.]+)\)/));
-                    if((/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/).test((hasReplace[2]))){
-                        getAttribute=(hasReplace[2]).match(/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/);
-                        hasReplace=value[hasReplace[1]].replace(getAttribute[1],getAttribute[2]);
-                    }else{
-                        getAttribute=(hasReplace[2]).match(/([#_a-zA-Z0-9.]+)/);
-                        hasReplace=value[hasReplace[1]].replace(getAttribute[1],"");
-                    }
-                    convertHtml =convertHtml.replace(val,hasReplace);
-                }
-                else if((/numberFormat(\[[_a-zA-Z0-9.]+\]|\[[_a-zA-Z0-9.]+\]\([#-_a-zA-Z0-9.]+\))/).test(pattern)){
-                    var getNumberFormat;
-                    if(((/numberFormat(\[[_a-zA-Z0-9.]+\]\([#-_a-zA-Z0-9.]+\))/).test(pattern))){
-                        getNumberFormat=pattern.match(/numberFormat\[([_a-zA-Z0-9.]+)\]\(([#-_a-zA-Z0-9.]+)\)/);
-                        getNumberFormat=new Intl.NumberFormat(getNumberFormat[2]).format(parseInt(value[getNumberFormat[1]]));
-                    }else{
-                        getNumberFormat=pattern.match(/numberFormat\[([_a-zA-Z0-9.]+)\]/);
-                        getNumberFormat=new Intl.NumberFormat().format(parseInt(value[getNumberFormat[1]]));
-                    }
-                    convertHtml =convertHtml.replace(val,getNumberFormat);
-                }
-                else if((/math\[[()+-/*_a-zA-Z0-9.]+\]|math\[[()+-/*_a-zA-Z0-9.]+\]\([-_a-zA-Z0-9.]+\)/).test(pattern)){
-                    var result,mathValue= function (mathValue) {
-                        var result=mathValue;
-                        mathValue=mathValue.match(/([_a-zA-Z0-9.]+)/gi);
-                        for(var i=0; i < mathValue.length; i++){
-                            if(!(/[0-9]+/).test(mathValue[i])){
-                                result=result.replace(mathValue[i],value[mathValue[i]]);
-                            }
+                    else if((/num\[\d+\]\+/).test(pattern)){
+                        if(each.hasNumber==false){
+                            each.numberSet=(pattern.match(/num\[(\d+)\]\+/))[1];
+                            each.hasNumber=true;
                         }
-                        return eval(result);
-                    };
-                    if((/math\[[+-/*_a-zA-Z0-9.]+\]\([-_a-zA-Z0-9.]+\)/).test(pattern)){
-                        result=pattern.match(/math\[([()+-/*_a-zA-Z0-9.]+)\]\(([-_a-zA-Z0-9.]+)\)/);
-                        if(result[2]=='default'){
-                            result=new Intl.NumberFormat().format(parseInt(mathValue(result[1])));
+                        convertHtml=convertHtml.replace(val,each.numberSet++);
+                        each.setStorageAsset({numberSet:each.numberSet});
+                    }
+                    else if((/replace\[[_a-zA-Z0-9.]+\]\([ #:_a-zA-Z0-9.]+\)/).test(pattern)){
+                        var getAttribute, hasReplace=(pattern.match(/replace\[([_a-zA-Z0-9.]+)\]\(([ #:_a-zA-Z0-9.]+)\)/));
+                        if((/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/).test((hasReplace[2]))){
+                            getAttribute=(hasReplace[2]).match(/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/);
+                            hasReplace=value[hasReplace[1]].replace(getAttribute[1],getAttribute[2]);
                         }else{
-                            result=new Intl.NumberFormat(result[2]).format(parseInt(mathValue(result[1])));
+                            getAttribute=(hasReplace[2]).match(/([#_a-zA-Z0-9.]+)/);
+                            hasReplace=value[hasReplace[1]].replace(getAttribute[1],"");
                         }
-                    }else{
-                        result=pattern.match(/math\[([()+-/*_a-zA-Z0-9.]+)\]/);
-                        result=mathValue(result[1]);
+                        convertHtml =convertHtml.replace(val,hasReplace);
                     }
-
-                    convertHtml =convertHtml.replace(val,result);
-                }
-                else if((/limitText\[[_a-zA-Z0-9.]+\]\([ #:_a-zA-Z0-9.]+\)/).test(pattern)){
-                    var getAtt, getText=pattern.match(/limitText\[([_a-zA-Z0-9.]+)\]\(([ #:_a-zA-Z0-9.]+)\)/);
-                    if((/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/).test((getText[2]))){
-                        getAtt=(getText[2].match(/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/));
-                        getText=value[getText[1]].substring(getAtt[1],getAtt[2]);
-
-                    }else{
-                        getText=value[getText[1]].substring(0,getText[2]);
+                    else if((/numberFormat(\[[_a-zA-Z0-9.]+\]|\[[_a-zA-Z0-9.]+\]\([#-_a-zA-Z0-9.]+\))/).test(pattern)){
+                        var getNumberFormat;
+                        if(((/numberFormat(\[[_a-zA-Z0-9.]+\]\([#-_a-zA-Z0-9.]+\))/).test(pattern))){
+                            getNumberFormat=pattern.match(/numberFormat\[([_a-zA-Z0-9.]+)\]\(([#-_a-zA-Z0-9.]+)\)/);
+                            getNumberFormat=new Intl.NumberFormat(getNumberFormat[2]).format(parseInt(value[getNumberFormat[1]]));
+                        }else{
+                            getNumberFormat=pattern.match(/numberFormat\[([_a-zA-Z0-9.]+)\]/);
+                            getNumberFormat=new Intl.NumberFormat().format(parseInt(value[getNumberFormat[1]]));
+                        }
+                        convertHtml =convertHtml.replace(val,getNumberFormat);
                     }
-                    convertHtml =convertHtml.replace(val,getText);
-                }
-                else if(typeof value[pattern]!="undefined"){
-                    convertHtml =convertHtml.replace(val,value[pattern]);
-                }
+                    else if((/math\[[()+-/*_a-zA-Z0-9.]+\]|math\[[()+-/*_a-zA-Z0-9.]+\]\([-_a-zA-Z0-9.]+\)/).test(pattern)){
+                        var result,mathValue= function (mathValue) {
+                            var result=mathValue;
+                            mathValue=mathValue.match(/([_a-zA-Z0-9.]+)/gi);
+                            for(var i=0; i < mathValue.length; i++){
+                                if(!(/[0-9]+/).test(mathValue[i])){
+                                    result=result.replace(mathValue[i],value[mathValue[i]]);
+                                }
+                            }
+                            return eval(result);
+                        };
+                        if((/math\[[+-/*_a-zA-Z0-9.]+\]\([-_a-zA-Z0-9.]+\)/).test(pattern)){
+                            result=pattern.match(/math\[([()+-/*_a-zA-Z0-9.]+)\]\(([-_a-zA-Z0-9.]+)\)/);
+                            if(result[2]=='default'){
+                                result=new Intl.NumberFormat().format(parseInt(mathValue(result[1])));
+                            }else{
+                                result=new Intl.NumberFormat(result[2]).format(parseInt(mathValue(result[1])));
+                            }
+                        }else{
+                            result=pattern.match(/math\[([()+-/*_a-zA-Z0-9.]+)\]/);
+                            result=mathValue(result[1]);
+                        }
+
+                        convertHtml =convertHtml.replace(val,result);
+                    }
+                    else if((/limitText\[[_a-zA-Z0-9.]+\]\([ #:_a-zA-Z0-9.]+\)/).test(pattern)){
+                        var getAtt, getText=pattern.match(/limitText\[([_a-zA-Z0-9.]+)\]\(([ #:_a-zA-Z0-9.]+)\)/);
+                        if((/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/).test((getText[2]))){
+                            getAtt=(getText[2].match(/([#_a-zA-Z0-9.]+):([ #_a-zA-Z0-9.]+)/));
+                            getText=value[getText[1]].substring(getAtt[1],getAtt[2]);
+
+                        }else{
+                            getText=value[getText[1]].substring(0,getText[2]);
+                        }
+                        convertHtml =convertHtml.replace(val,getText);
+                    }
+                    else if(typeof value[pattern]!="undefined"){
+                        convertHtml =convertHtml.replace(val,value[pattern]);
+                    }
+                   }
             });
             each.modelUri.append(convertHtml);
         });
@@ -137,7 +141,44 @@
         return this;
     };
     heavenJS.prototype.model= function (obj) {
-        console.log(obj(this.getModel()));
+        obj =obj(this.getModel());var model=obj.name, html, modelUri,Opt=this.getGlobal();
+        var getMatch= function (str,flags) {
+            var symbol, Expression, result=null;
+            symbol=Opt.syBegin;
+            symbol +="([_a-zA-Z0-9.]+|[a-z.++]+|[a-z.]+\\[\\d+\\]\\+|math\\[[()+-/*_a-zA-Z0-9.]+\\]|math\\[[()+-/*_a-zA-Z0-9.]+\\]\\([-_a-zA-Z0-9.]+\\)|[a-zA-Z.]+\\[[_a-zA-Z0-9.]+\\]|[a-zA-Z.]+\\[[_a-zA-Z0-9.]+\\]\\([#-:_a-zA-Z0-9.]+\\))";
+            symbol +=Opt.syEnd;
+            Expression = typeof flags != 'undefined' ?
+                new RegExp(symbol,flags) :
+                new RegExp(symbol);
+            if(typeof str != 'undefined'){
+                result= str.match(Expression);
+            }
+            return result;
+        };
+        modelUri=this.getController().find('*[model="'+model+'"]'); html=modelUri.html();
+        if(typeof this.getStorage()[model] != 'undefined'){
+            if(typeof this.getStorage()[model].html != 'undefined')
+                html = this.getStorage()[model].html;
+        }else{
+            this.setStorage(model,{html:html});
+        }
+        modelUri.html("");
+        var pattern,convertHtml,number=typeof this.getStorage()[model].number == 'undefined'? 1 : this.getStorage()[model].number,hasNumber=false;
+        var numberSet=typeof this.getStorage()[model].numberSet == 'undefined'? 0 : this.getStorage()[model].numberSet, storageAsset=this.setStorage;
+        var setStorageAsset= function (num) {
+            storageAsset(model,num);
+        };
+        each({
+            model:obj.data,
+            obj : obj.object,
+            html:html,
+            getMatch:getMatch,
+            number:number,
+            setStorageAsset:setStorageAsset,
+            hasNumber:hasNumber,
+            numberSet:numberSet,
+            modelUri:modelUri
+        });
     };
     heavenJS.prototype.foreach= function (obj, model) {
         var html, modelUri,Opt=this.getGlobal();
@@ -156,8 +197,8 @@
         };
         if(typeof obj != 'undefined' && typeof obj == 'object' && typeof model != 'undefined'){
             if((/[_a-zA-Z0-9]+ as [_a-zA-Z0-9]+/).test(model)){
-                var model = model.match(/([_a-zA-Z0-9]+) as ([_a-zA-Z0-9]+)/),setModel={},getModel=model[2];
-                setModel[getModel]= function () {}; this.setModel(setModel); this.getModel()[getModel](getModel);
+                var model = model.match(/([_a-zA-Z0-9]+) as ([_a-zA-Z0-9]+)/),setModel={},getModel={};getModel[model[2]]= function () {};
+                setModel[model[2]]= {name:model[1],object:obj,data:{}}; this.setModel(setModel);
             }else{
                 modelUri=this.getController().find('*[model="'+model+'"]'); html=modelUri.html();
                 if(typeof this.getStorage()[model] != 'undefined'){
