@@ -199,6 +199,7 @@
             if((/[_a-zA-Z0-9]+ as [_a-zA-Z0-9]+/).test(model)){
                 var model = model.match(/([_a-zA-Z0-9]+) as ([_a-zA-Z0-9]+)/),setModel={},getModel={};getModel[model[2]]= function () {};
                 setModel[model[2]]= {name:model[1],object:obj,data:{}}; this.setModel(setModel);
+                return this;
             }else{
                 modelUri=this.getController().find('*[model="'+model+'"]'); html=modelUri.html();
                 if(typeof this.getStorage()[model] != 'undefined'){

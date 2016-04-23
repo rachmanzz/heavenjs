@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Demo</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="../dist/heavenjs.js"></script>
+
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <a class="navbar-brand" href="#">heavenJS</a>
+            </a>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="row">
+                <div>
+                    <h1>heavenJS</h1>
+                    <h3>Welcome sir, thanks for using heavenJS.</h3>
+                    <p>heavenJS is under construction, but some feature has available. </p>
+                </div>
+                <div>
+                    <h3>Features</h3>
+                    <ul>
+                        <li>Loop Data (available)</li>
+                        <li>Advanced Loop Data (available)</li>
+                        <li>Pagination (available next time)</li>
+                        <li>sweet-alert (available next time)</li>
+                        <li>convert number to word (available next time)</li>
+                        <li>and other function will be available on heavenJS</li>
+                    </ul>
+                </div>
+                <div control="webApp">
+                    <h3>Implementation</h3>
+                    <h4>On Ordered</h4>
+                    <ol model="trx">
+                        <li>([num[12]+]). ([replace[trxnum](trx#)]) Total: ([total]),Price : ([numberFormat[price]]),Total Price : ([math[total*price](default)]) </li>
+                    </ol>
+                    <h4>On Table</h4>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>trx id</th>
+                            <th>item name</th>
+                            <th>total</th>
+                            <th>price</th>
+                            <th>total price</th>
+                            <th>date</th>
+                        </tr>
+                        </thead>
+                        <tbody model="trxItem">
+                        <tr>
+                            <td>([num++])</td>
+                            <td>([replace[trxnum](trx#)])</td>
+                            <td>([id])</td>
+                            <td>([total])</td>
+                            <td>([numberFormat[price]])</td>
+                            <td>([math[total*price](default)])</td>
+                            <td>([date])</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var myjson='[{"id":8,"trxnum":"trx#6970-ITEM","total":2,"price":300,"date":"2016-04-21"},{"id":9,"trxnum":"trx#6971-ITEM","total":3,"price":310,"date":"2016-04-22"},{"id":10,"trxnum":"trx#6972-ITEM","total":1,"price":61000,"date":"2016-04-22"}]';
+    var heavenjs= new heavenJS({control:"webApp"});
+    heavenjs.foreach($.parseJSON(myjson),'trx');
+    //Advanced method
+    heavenjs.foreach($.parseJSON(myjson),'trxItem as myItem');
+    heavenjs.model(function (m) {
+        m= m.myItem;
+        m.data.id=function(x){
+            if(x == 8){
+                x="pen";
+            }
+            else if(x == 9){
+                x="wool";
+            }
+            else if(x == 10){
+                x="wood";
+            }else{
+                x='other items';
+            }
+            return x;
+        };
+        return m;
+    });
+</script>
+</body>
+</html>
