@@ -26,13 +26,13 @@ all of heavenJS function run inner control, that you have defined control first
         
 Pattern Key
 
-    ([key])
+    ([key]) // default pattern
     ([num++]) // looping number
     ([num[3]+]) // looping number from 3
     ([replace[key](replace)]) //delete replace in value
     ([replace[key](data:newvalue)]) // replace data to newvalue
     ([numberFormat[key]]) // number format default
-    ([numberFormat[key](format)]) // number format 
+    ([numberFormat[key](ar-EG)]) // Arabic, en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working 
     ([math[key*key]]) // math
     ([math[total*price+3(4-2)]]) // math 
     ([limitText[key](12)]) // limit text
