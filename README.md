@@ -14,7 +14,7 @@
         .......
     </html>
     
-all of heavenJS function run inner control, that you have defined control first
+all of heavenJS function run inner control, that you must define control first
     
 #### Looping Data
     heavenjs.foreach(jsonObject,'model'); // standard
