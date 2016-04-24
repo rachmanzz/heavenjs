@@ -65,6 +65,54 @@ or
             .pull='id'; // single value .get() function return string
             .pull='all'; // return all json value .get() function return array
             
+#### Example
+######  - HTML
+
+    <div control="myApp">
+        <table>
+            <thead>
+                <tr>
+                    <td>#</td>
+                    <td>name</td>
+                    <td>price</td>
+                    <td>opinion</td>
+                </tr>    
+            </thead>
+            <tbody model="item">
+                <tr>
+                    <td>([num++])</td>
+                    <td>([name])</td>
+                    <td>$([numberFormat[price]])</td>
+                    <td>([opinion])</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+######  - Javascript
+    
+    //json Object
+    var myjson='[{"id":2,"name":"Asus phone","price":500,"date":"2016-04-21"},' +
+                '{"id":3,"name":"Lenovo phone","price":210,"date":"2016-04-22"},' +
+                '{"id":5,"name":"Alienware","price":61000,"date":"2016-04-22"}]';
+
+   
+   heavenjs.foreach(myjson,'item as x').model(function(model){
+                   var m=model.x;
+                   m.pull='price';
+                   m.get= function (x) {
+                    var myOpinion;
+                      if(x <= 350){
+                        myOpinion="Low Price";
+                      }else if(x <= 800){
+                        myOpinion="Normal Price";
+                      }else{
+                       myOpinion="expensive";
+                      }
+                       m.put.opinion=myOpinion; // replace pattern key with x value
+                   }        
+                   return m;
+               });
     
 ##### change symbol
     var heavenjs=new heavenJS(syBegin:"\\{\\{",syEnd:"\\}\\}");
