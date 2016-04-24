@@ -95,9 +95,8 @@ or
     var myjson='[{"id":2,"name":"Asus phone","price":500,"date":"2016-04-21"},' +
                 '{"id":3,"name":"Lenovo phone","price":210,"date":"2016-04-22"},' +
                 '{"id":5,"name":"Alienware","price":61000,"date":"2016-04-22"}]';
-
-   
-   heavenjs.foreach(myjson,'item as x').model(function(model){
+    var heavenjs=new heavenJS({control:'myApp'});            
+    heavenjs.foreach(myjson,'item as x').model(function(model){
                    var m=model.x;
                    m.pull='price';
                    m.get= function (x) {
