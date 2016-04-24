@@ -17,7 +17,7 @@
 all of heavenJS function run inner control, that you have defined control first
     
 #### Looping Data
-    heavenjs.foreach(jsonObject,'model'); // default
+    heavenjs.foreach(jsonObject,'model'); // standard
         
         //html
         <ol model="model">
