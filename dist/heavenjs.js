@@ -10,6 +10,23 @@
         };
     }
 })(window,jQuery, function ($) {
+    function getLength(l){
+        var length;
+        if(typeof Object.keys(l).length != "undefined"){
+            length=Object.keys(l).length;
+        }else{
+            var count = 0;
+            var i;
+
+            for (i in l) {
+                if (l.hasOwnProperty(i)) {
+                    count++;
+                }
+            }
+            length=count;
+        }
+        return length;
+    }
     function each(each){
         var convertHtml;
         $.each(each.obj, function (key,value) {
@@ -17,11 +34,34 @@
                 console.log('Value is not JSON Object');
                 return false;
             }
+            if(typeof each.model != "undefined"){
+                var getPull={};
+                if(typeof each.model.pull == 'object' && each.model.pull.length >=1){
+                    for(var i=0; i<=each.model.pull.length-1;i++){
+                        if(typeof value[each.model.pull[i]] != 'undefined'){
+                            getPull[each.model.pull[i]]=value[each.model.pull[i]];
+                        }
+                    }
+                }
+                if(typeof each.model.pull == 'string' && each.model.pull.toLowerCase() == 'all'){
+                    getPull=value;
+                }
+                else if(typeof each.model.pull == 'string' && each.model.pull != ''){
+                    if(typeof value[each.model.pull] != 'undefined'){
+                        getPull = value[each.model.pull];
+                    }
+                }
+
+                each.model.get(getPull);
+            }
+
             convertHtml=each.html;
             $.each(each.getMatch(each.html,'gi'), function (key,val) {
                 pattern = each.getMatch(val)[1];
-                if(typeof each.model != "undefined" && typeof each.model[pattern] != "undefined"){
-                    convertHtml=convertHtml.replace(val,each.model[pattern](value[pattern]));
+                if(typeof each.model != "undefined" && typeof each.model.data[pattern] != "undefined"){
+                    convertHtml=convertHtml.replace(val,each.model.data[pattern](value[pattern]));
+                }else if(typeof each.model != "undefined" && typeof each.model.put[pattern] != "undefined") {
+                    convertHtml=convertHtml.replace(val,each.model.put[pattern]);
                 }else{
                     if(pattern == 'num++'){
                         convertHtml=convertHtml.replace(val,each.number++);
@@ -169,7 +209,7 @@
             storageAsset(model,num);
         };
         each({
-            model:obj.data,
+            model:obj,
             obj : obj.object,
             html:html,
             getMatch:getMatch,
@@ -198,7 +238,7 @@
         if(typeof obj != 'undefined' && typeof obj == 'object' && typeof model != 'undefined'){
             if((/[_a-zA-Z0-9]+ as [_a-zA-Z0-9]+/).test(model)){
                 var model = model.match(/([_a-zA-Z0-9]+) as ([_a-zA-Z0-9]+)/),setModel={},getModel={};getModel[model[2]]= function () {};
-                setModel[model[2]]= {name:model[1],object:obj,data:{}}; this.setModel(setModel);
+                setModel[model[2]]= {name:model[1],object:obj,data:{},get:function(x){},pull:[],put:{}}; this.setModel(setModel);
                 return this;
             }else{
                 modelUri=this.getController().find('*[model="'+model+'"]'); html=modelUri.html();

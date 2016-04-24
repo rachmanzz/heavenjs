@@ -75,6 +75,31 @@
                         </tr>
                         </tbody>
                     </table>
+                    <h4>On Table (other method)</h4>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>trx id</th>
+                            <th>item name</th>
+                            <th>total</th>
+                            <th>price</th>
+                            <th>total price</th>
+                            <th>date</th>
+                        </tr>
+                        </thead>
+                        <tbody model="trxItemTwo">
+                        <tr>
+                            <td>([num++])</td>
+                            <td>([replace[trxnum](trx#)])</td>
+                            <td>([id])</td>
+                            <td>([total])</td>
+                            <td>([numberFormat[price]])</td>
+                            <td>([math[total*price](default)])</td>
+                            <td>([date])</td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -101,6 +126,25 @@
                 x='other items';
             }
             return x;
+        };
+        return m;
+    });
+    heavenjs.foreach($.parseJSON(myjson),'trxItemTwo as Item2').model(function (m) {
+        m= m.Item2;
+        m.pull=['id','price']; // other -> m.pull="id" (get id), m.pull="all" // get all value of myjson
+        m.get= function (x) {
+            if(x.id == 8){
+                x="pen 2";
+            }
+            else if(x.id == 9){
+                x="wool 2";
+            }
+            else if(x.id == 10){
+                x="wood 2";
+            }else{
+                x='other items 2';
+            }
+            m.put.id=x;
         };
         return m;
     });
