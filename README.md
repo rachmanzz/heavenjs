@@ -108,7 +108,7 @@ or
                       }else{
                        myOpinion="expensive";
                       }
-                       m.put.opinion=myOpinion; // replace pattern key with x value
+                       m.put.opinion=myOpinion; 
                    }        
                    return m;
                });
