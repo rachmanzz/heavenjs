@@ -268,6 +268,21 @@
             }
         }
     };
+    heavenJS.prototype.parseContent= function () {
+        var data={}, pull=this.getController().find('*[pull]');
+        if(typeof pull.attr('pull') != "undefined" ){
+            pull.each(function () {
+                if((/[_a-zA-Z0-9.]+ */).test($(this).attr('pull'))){
+                    pull=$(this).attr('pull').match(/([_a-zA-Z0-9.]+)(\{[:',a-zA-Z0-9]+\})/);
+                }
+                if(pull!=null){
+                    data[pull[1]]= $.parseJSON(JSON.stringify(eval("(" + pull[2] + ")")));
+                }
+            });
+        }
+        console.log(data);
+
+    };
     heavenJS.prototype.pagination= function () {
 
     };

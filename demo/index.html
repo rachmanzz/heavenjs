@@ -99,7 +99,10 @@
                             <td>([date])</td>
                         </tr>
                         </tbody>
+                        <tfoot pull="vava{'bobo':'dada','gogo':'hoho'}" push="data as vars">
+                        </tfoot>
                     </table>
+                    <div pull="bobo{}"></div>
                 </div>
             </div>
         </div>
@@ -113,6 +116,7 @@
 
 
     var heavenjs= new heavenJS({control:"webApp"});
+    heavenjs.parseContent();
 
     heavenjs.foreach($.parseJSON(myjson),'trx');
     //Advanced method
@@ -135,10 +139,12 @@
         };
         return m;
     });
+    var price=0;
     heavenjs.foreach($.parseJSON(myjson),'trxItemTwo as Item2').model(function (m) {
         m= m.Item2;
         m.pull=['id','price']; // other -> m.pull="id" (get id), m.pull="all" // get all value of myjson
         m.get= function (x) {
+            price=price+parseInt(x.price);
             if(x.id == 8){
                 x="pen 2";
             }
@@ -150,6 +156,7 @@
             }else{
                 x='other items 2';
             }
+
             m.put.id=x;
         };
         return m;
