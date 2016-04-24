@@ -17,7 +17,7 @@
 all of heavenJS function run inner control, that you have defined control first
     
 #### Looping Data
-    heavenjs.foreach(jsonObject,'model'); // standart
+    heavenjs.foreach(jsonObject,'model'); // default
         
         //html
         <ol model="model">
@@ -34,7 +34,8 @@ Pattern Key
     ([numberFormat[key]]) // number format default
     ([numberFormat[key](ar-EG)]) // Arabic, en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working 
     ([math[key*key]]) // math
-    ([math[total*price+3(4-2)]]) // math 
+    ([math[total*price+3(4-2)]]) // math
+     ([math[total*price+3(4-2)](default)]) // math with number format ; en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working
     ([limitText[key](12)]) // limit text
     ([limitText[key](8:20)]) // limit text
 
