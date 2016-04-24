@@ -29,8 +29,8 @@ Pattern Key
     ([key]) // default pattern
     ([num++]) // looping number
     ([num[3]+]) // looping number from 3
-    ([replace[key](replace)]) //delete replace in value
-    ([replace[key](data:newvalue)]) // replace data to newvalue
+    ([replace[key](str)]) //delete str in value
+    ([replace[key](str:string)]) // replace str to string
     ([numberFormat[key]]) // number format default
     ([numberFormat[key](ar-EG)]) // Arabic, en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working 
     ([math[key*key]]) // math
@@ -68,6 +68,3 @@ or
     
 ##### change symbol
     var heavenjs=new heavenJS(syBegin:"\\{\\{",syEnd:"\\}\\}");
-    
-    pattern keys
-    {{keys}}
