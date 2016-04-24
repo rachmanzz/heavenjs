@@ -106,8 +106,14 @@
     </div>
 </div>
 <script>
-    var myjson='[{"id":8,"trxnum":"trx#6970-ITEM","total":2,"price":300,"date":"2016-04-21"},{"id":9,"trxnum":"trx#6971-ITEM","total":3,"price":310,"date":"2016-04-22"},{"id":10,"trxnum":"trx#6972-ITEM","total":1,"price":61000,"date":"2016-04-22"}]';
+
+    var myjson='[{"id":8,"trxnum":"trx#6970-ITEM","total":2,"price":300,"date":"2016-04-21"},' +
+            '{"id":9,"trxnum":"trx#6971-ITEM","total":3,"price":310,"date":"2016-04-22"},' +
+            '{"id":10,"trxnum":"trx#6972-ITEM","total":1,"price":61000,"date":"2016-04-22"}]';
+
+
     var heavenjs= new heavenJS({control:"webApp"});
+
     heavenjs.foreach($.parseJSON(myjson),'trx');
     //Advanced method
     heavenjs.foreach($.parseJSON(myjson),'trxItem as myItem');
