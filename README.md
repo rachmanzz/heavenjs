@@ -12,7 +12,7 @@
     //html
     <div control="webApp">
         .......
-    </html>
+    </div>
     
 all of heavenJS function run inner control, that you must define control first
     
