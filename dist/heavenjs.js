@@ -51,10 +51,8 @@
                         getPull = value[each.model.pull];
                     }
                 }
-
                 each.model.get(getPull);
             }
-
             convertHtml=each.html;
             $.each(each.getMatch(each.html,'gi'), function (key,val) {
                 pattern = each.getMatch(val)[1];
@@ -133,6 +131,9 @@
                         }
                         convertHtml =convertHtml.replace(val,getText);
                     }
+                    else if((/ /).test(pattern)){
+
+                    }
                     else if(typeof value[pattern]!="undefined"){
                         convertHtml =convertHtml.replace(val,value[pattern]);
                     }
@@ -141,8 +142,32 @@
             each.modelUri.append(convertHtml);
         });
     }
+    function push(data){
+        var push=data.getController().find('*[push-data]');
+        if(typeof push.attr('push-data') != "undefined" ){
+            push.each(function () {
+                push =$(this).attr('push-data');
+                if((/[_a-zA-Z0-9]+ as [_a-zA-Z0-9]+$/).test(push)){
+                    push=push.match(/([_a-zA-Z0-9]+) as ([_a-zA-Z0-9]+)$/);
+                    data.setPushData(push[2],{
+                        key : push[1],
+                        object: $(this),
+                        html:$(this).html(),
+                        get:function(){},
+                        put:{},
+                        data:{}
+                    });
+                }
+            });
+        }
+    }
+    function getObjectProp(obj, str) {
+        var str = str.split(".");
+        while(str.length && (obj = obj[str.shift()]));
+        return obj;
+    }
     var heavenJS = function (GLOBAL) {
-        var controller, storage={}, model={},GLOBALS={syBegin:"\\(\\[",syEnd:"\\]\\)"};
+        var controller, storage={},dataPush={}, model={},GLOBALS={syBegin:"\\(\\[",syEnd:"\\]\\)"};
         if(typeof GLOBAL !== 'undefined' && typeof GLOBAL.control !== 'undefined'){
             controller = GLOBAL.control;
             delete GLOBAL.control;
@@ -175,9 +200,25 @@
         this.getStorage= function () {
             return storage;
         };
+        this.setPushData=function(key,obj){
+            if(typeof dataPush[key]!='undefined'){
+                $.extend(dataPush[key],obj);
+            }else{
+                dataPush[key]=obj;
+            }
+        };
+        this.getPushData= function () {
+            return dataPush;
+        };
+        if(typeof controller!='undefined'){
+            push(this);
+        }
     };
     heavenJS.prototype.control= function (control) {
         this.setController(control);
+        if(typeof control!='undefined'){
+            push(this);
+        }
         return this;
     };
     heavenJS.prototype.model= function (obj) {
@@ -269,18 +310,126 @@
         }
     };
     heavenJS.prototype.parseContent= function () {
-        var data={}, pull=this.getController().find('*[pull]');
-        if(typeof pull.attr('pull') != "undefined" ){
-            pull.each(function () {
-                if((/[_a-zA-Z0-9.]+ */).test($(this).attr('pull'))){
-                    pull=$(this).attr('pull').match(/([_a-zA-Z0-9.]+)(\{[:',a-zA-Z0-9]+\})/);
+        var data,html,GLOBAL=this.getGlobal(),push=this.getController().find('*[push-data]');
+        var getMatch= function (str,flags) {
+            var symbol, Expression, result=null;
+            symbol=GLOBAL.syBegin;
+            symbol +="([a-zA-Z]+:[_.a-zA-Z0-9]+|[()+-/*%:_a-zA-Z0-9.]+|[()+-/*%:_a-zA-Z0-9.]+\\[[(-_a-zA-Z0-9.]+\\])";
+            symbol +="()";
+            symbol +=GLOBAL.syEnd;
+            Expression = typeof flags != 'undefined' ?
+                new RegExp(symbol,flags) :
+                new RegExp(symbol);
+            if(typeof str != 'undefined'){
+                result= str.match(Expression);
+            }
+            return result;
+        };
+        if(typeof push.attr('push-data') != "undefined" ){
+            push.each(function () {
+                push =$(this).attr('push-data');
+                html =$(this).html();
+                if((/[a-zA-Z0-9]+ as [a-zA-Z0-9]+\{[':"{,}a-zA-Z0-9]+\}/).test(push)){
+                    data=push.match(/([a-zA-Z0-9]+) as ([a-zA-Z0-9]+)(\{.*\})/);
+                    var array= $.parseJSON(JSON.stringify(eval('('+data[3]+')')));
+                    if(getMatch(html) != null){
+                        $.each(getMatch(html,'gi'), function (key,value) {
+                            var pattern=getMatch(value)[1],result,getValue;
+                            if((/[-%*()-+:_a-zA-Z0-9]+\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\]/).test(pattern)){
+                                result = pattern.match(/([-%*()-+:_a-zA-Z0-9]+)(\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\])/);
+                                if((/\[number|number:[_a-zA-Z0-9]+\]/).test(result[2])){
+                                    var mathValue= function (mathValue) {
+                                        var result=mathValue;
+                                        mathValue=mathValue.match(new RegExp("([:_a-zA-Z0-9.]+)",'gi'));
+                                        for(var i=0; i < mathValue.length; i++){
+                                            if(!(/[0-9]+/).test(mathValue[i])){
+                                                result=result.replace(mathValue[i],array[mathValue[i].match(new RegExp(data[1]+":([_a-zA-Z0-9]+)"))[1]]);
+                                            }
+                                        }
+                                        return eval(result);
+                                    };
+                                    if((/number:[-_a-zA-Z0-9]+]/).test(result[2])){
+                                        result=new Intl.NumberFormat(result[2].match(/number:([-_a-zA-Z0-9]+)/)[1]).format(parseInt(mathValue(result[1])));
+                                    }else{
+                                        result=new Intl.NumberFormat().format(parseInt(mathValue(result[1])));
+                                    }
+                                    html=html.replace(value,result);
+                                }
+                            }
+                            else if((new RegExp(data[1]+":[_.a-zA-Z0-9]+")).test(pattern)){
+                                result=pattern.match(new RegExp(data[1]+":([_.a-zA-Z0-9]+)"));
+                                if((/[a-zA-Z0-9]+\.[a-zA-Z0-9]+/).test(result[1])){
+                                    result=getObjectProp(array,result[1]);
+                                }else if(typeof array[result[1]] != 'undefined'){
+                                    result=array[result[1]];
+                                }
+                                html=html.replace(value,result);
+                            }
+                        });
+                    }
                 }
-                if(pull!=null){
-                    data[pull[1]]= $.parseJSON(JSON.stringify(eval("(" + pull[2] + ")")));
-                }
+                $(this).html(html);
             });
         }
-        console.log(data);
+    };
+    heavenJS.prototype.push= function (push) {
+        push=push(this.getPushData());
+        var html =push.html, GLOBAL=this.getGlobal(),array=push.data;
+        var getMatch= function (str,flags) {
+            var symbol, Expression, result=null;
+            symbol=GLOBAL.syBegin;
+            symbol +="([a-zA-Z]+:[_.a-zA-Z0-9]+|[()+-/*%:_a-zA-Z0-9.]+|[()+-/*%:_a-zA-Z0-9.]+\\[[(-_a-zA-Z0-9.]+\\])";
+            symbol +="()";
+            symbol +=GLOBAL.syEnd;
+            Expression = typeof flags != 'undefined' ?
+                new RegExp(symbol,flags) :
+                new RegExp(symbol);
+            if(typeof str != 'undefined'){
+                result= str.match(Expression);
+            }
+            return result;
+        };
+        if(getMatch(html) != null){
+            var key=push.key;
+            $.each(getMatch(html,'gi'), function (keys,value) {
+                var pattern=getMatch(value)[1],result;
+                if(getLength(push.put)>=1 && new RegExp(key+":([_a-zA-Z0-9]+)").test(pattern) && typeof push.put[pattern.match(new RegExp(key+":([_a-zA-Z0-9]+)"))[1]] != 'undefined'){
+                    html=html.replace(value,push.put[pattern.match(new RegExp(key+":([_a-zA-Z0-9]+)"))[1]]);
+                }
+                if((/[-%*()-+:_a-zA-Z0-9]+\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\]/).test(pattern)){
+                    result = pattern.match(/([-%*()-+:_a-zA-Z0-9]+)(\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\])/);
+                    if((/\[number|number:[_a-zA-Z0-9]+\]/).test(result[2])){
+                        var mathValue= function (mathValue) {
+                            var result=mathValue;
+                            mathValue=mathValue.match(new RegExp("([:_a-zA-Z0-9.]+)",'gi'));
+                            for(var i=0; i < mathValue.length; i++){
+                                if(!(/[0-9]+/).test(mathValue[i])){
+                                    result=result.replace(mathValue[i],array[mathValue[i].match(new RegExp(key+":([_a-zA-Z0-9]+)"))[1]]);
+                                }
+                            }
+                            return eval(result);
+                        };
+                        if((/number:[-_a-zA-Z0-9]+]/).test(result[2])){
+                            result=new Intl.NumberFormat(result[2].match(/number:([-_a-zA-Z0-9]+)/)[1]).format(parseInt(mathValue(result[1])));
+                        }else{
+                            result=new Intl.NumberFormat().format(parseInt(mathValue(result[1])));
+                        }
+                        html=html.replace(value,result);
+                    }
+                }
+                else if((new RegExp(key+":[_.a-zA-Z0-9]+")).test(pattern)){
+                    result=pattern.match(new RegExp(key+":([_.a-zA-Z0-9]+)"));
+                    if((/[a-zA-Z0-9]+\.[a-zA-Z0-9]+/).test(result[1])){
+                        result=getObjectProp(array,result[1]);
+                        html=html.replace(value,result);
+                    }else if(typeof array[result[1]] != 'undefined'){
+                        result=array[result[1]];
+                        html=html.replace(value,result);
+                    }
+                }
+            });
+            push.object.html(html);
+        }
 
     };
     heavenJS.prototype.pagination= function () {

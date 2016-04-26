@@ -99,6 +99,12 @@
                             <td>([date])</td>
                         </tr>
                         </tbody>
+                        <tfoot push-data="x as itemPrice">
+                        <tr>
+                            <th colspan="6">Total Price</th>
+                            <th>([x:total[number]])</th>
+                        </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -136,12 +142,12 @@
         };
         return m;
     });
-    var price=0;
+    var totalPrice=0;
     heavenjs.foreach($.parseJSON(myjson),'trxItemTwo as Item2').model(function (m) {
         m= m.Item2;
-        m.pull=['id','price']; // other -> m.pull="id" (get id), m.pull="all" // get all value of myjson
+        m.pull=['id','price','total']; // other -> m.pull="id" (get id), m.pull="all" // get all value of myjson
         m.get= function (x) {
-            price=price+parseInt(x.price);
+            totalPrice=totalPrice+(x.price * x.total);
             if(x.id == 8){
                 x="pen 2";
             }
@@ -158,6 +164,12 @@
         };
         return m;
     });
+    heavenjs.push(function (x) {
+        x=x.itemPrice;
+        x.data.total=totalPrice;
+        return x;
+    });
+
 </script>
 </body>
 </html>

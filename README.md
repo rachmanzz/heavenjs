@@ -64,7 +64,23 @@ or
             
             .pull='id'; // single value .get() function return string
             .pull='all'; // return all json value .get() function return array
-            
+
+#### Push
+##### html
+    <div push="x as item">
+         ...........
+    </div>
+    
+##### javascript
+    heavenjs.push(function(x){
+        x=x.item;
+            ............
+        return x;
+    });
+    
+    .data // object, push data to html
+    .put.key // string/number, push data to html  
+    
 #### Example
 ######  - HTML
 
@@ -86,6 +102,16 @@ or
                     <td>([opinion])</td>
                 </tr>
             </tbody>
+            <tfoot push-data="x as item">
+                <tr>
+                    <td colspan="3">
+                       Total
+                    </td>
+                    <td>
+                        ([x:total])
+                    </td>
+                </tr>
+            </tfoot>
         </table>
     </div>
     
@@ -95,11 +121,12 @@ or
     var myjson='[{"id":2,"name":"Asus phone","price":500,"date":"2016-04-21"},' +
                 '{"id":3,"name":"Lenovo phone","price":210,"date":"2016-04-22"},' +
                 '{"id":5,"name":"Alienware","price":61000,"date":"2016-04-22"}]';
-    var heavenjs=new heavenJS({control:'myApp'});            
+    var total=0,heavenjs=new heavenJS({control:'myApp'});
     heavenjs.foreach($.parseJSON(myjson),'item as x').model(function(model){
                    var m=model.x;
                    m.pull='price';
                    m.get= function (x) {
+                    total = total+x;
                     var myOpinion;
                       if(x <= 350){
                         myOpinion="Low Price";
@@ -112,6 +139,14 @@ or
                    }        
                    return m;
                });
+    heavenjs.push(function(x){
+        x=x.item;
+        x.put.total=total;
+        return x;
+    });
     
 ##### change symbol
     var heavenjs=new heavenJS(syBegin:"\\{\\{",syEnd:"\\}\\}");
+        
+    
+[Demo](https://github.com/rachmanzz/heavenjs/tree/master/demo)    
