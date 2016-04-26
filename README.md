@@ -24,7 +24,7 @@ all of heavenJS function run inner control, that you must define control first
             <li>.....</li>
         </ol>
         
-Pattern Key
+######Pattern Keys
 
     ([key]) // default pattern
     ([num++]) // looping number
@@ -41,29 +41,41 @@ Pattern Key
 
 or
     
-    heavenjs.foreach(jsonObject,'model as data'); // advance
+    heavenjs.foreach(jsonObject,'model as data'); // advanced method
         heavenjs.model(function(model){
-            var data=model.data;
-            // your code here
+            var data=model.data; // define your model
+            
+            /* your code here */
+                 
+                 ...........
         });
     
         heavenjs.foreach(jsonObject,'model as data').model(function(model){
-                var m=model.data;
-                m.data.keys =function(value){
-                            return value //keys value, here you can make condition
+                var m=model.data; // defined model
+                m.data.keys =function(value){ // 
+                
+                            /* .. condition .. */
+                            /* .. value is your jsonObject keys value .. */
+                            
+                            return value;
                         }
-                m.pull=['id','price']; // get id and price value
-                m.get= function (x) { // you need pull value before run .get() function
-                    // x is object that you have pull
-                    // then you can make condition here
-                    m.put.keypattern=x; // replace pattern key with x value
+                /* diferent way */        
+                m.pull=['id','price']; // pull id & price from your JSONObject
+                m.get= function (x) { // get your id & price after pulled
+                    
+                    /* .. condition .. */
+                    /* .. x is object value that has pulled .. */
+                    /* .. try console.log(x) .. */
+                    
+                    m.put.key=x; // replace pattern key with x value
                 }
                             
-                return m;
+                return m; // return your model
             });
             
-            .pull='id'; // single value .get() function return string
-            .pull='all'; // return all json value .get() function return array
+            .pull='id'; // single value .get() function return string or int
+            .pull='all'; // pull all of JSONObject Value, return array
+            .pull=['id','price'] // pull some value of JSONObject, return array
 
 #### Push
 ##### html
@@ -80,6 +92,12 @@ or
     
     .data // object, push data to html
     .put.key // string/number, push data to html  
+    
+diffrent way ( not recommended, whitespace is not allowed ) 
+
+    <div push-data="x as myitem{'price':1230,'home:{'city':'jakarta'}'}">
+        ([x:price]), test subObject ([x:home.city]) 
+    </div>
     
 #### Example
 ######  - HTML
