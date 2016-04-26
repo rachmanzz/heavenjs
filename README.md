@@ -24,7 +24,7 @@ all of heavenJS function run inner control, that you must define control first
             <li>.....</li>
         </ol>
         
-######Pattern Keys
+###### Pattern Keys
 
     ([key]) // default pattern
     ([num++]) // looping number
@@ -67,7 +67,7 @@ or
                     /* .. x is object value that has pulled .. */
                     /* .. try console.log(x) .. */
                     
-                    m.put.key=x; // replace pattern key with x value
+                    m.put.key=x; // replace pattern key with x value [reference](https://github.com/rachmanzz/heavenjs#pattern-keys) 
                 }
                             
                 return m; // return your model
