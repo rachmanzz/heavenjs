@@ -67,7 +67,7 @@ or
                     /* .. x is object value that has pulled .. */
                     /* .. try console.log(x) .. */
                     
-                    m.put.key=x; // replace pattern key with x value [reference](https://github.com/rachmanzz/heavenjs#pattern-keys) 
+                    m.put.key=x; // replace pattern key with x value  
                 }
                             
                 return m; // return your model
@@ -76,6 +76,9 @@ or
             .pull='id'; // single value .get() function return string or int
             .pull='all'; // pull all of JSONObject Value, return array
             .pull=['id','price'] // pull some value of JSONObject, return array
+            
+[reference:pattern keys](https://github.com/rachmanzz/heavenjs#pattern-keys)            
+
 
 #### Push
 ##### html
