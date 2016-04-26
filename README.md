@@ -16,8 +16,8 @@
     
 all of heavenJS function run inner control, that you must define control first
     
-#### Looping Data
-    heavenjs.foreach(jsonObject,'model'); // standard
+## foreach ( looping data )
+    heavenjs.foreach(jsonObject,'model'); // standard method
         
         //html
         <ol model="model">
@@ -35,13 +35,13 @@ all of heavenJS function run inner control, that you must define control first
     ([numberFormat[key](ar-EG)]) // Arabic, en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working 
     ([math[key*key]]) // math
     ([math[total*price+3(4-2)]]) // math
-     ([math[total*price+3(4-2)](default)]) // math with number format ; en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working
+    ([math[total*price+3(4-2)](default)]) // math with number format ; en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working
     ([limitText[key](12)]) // limit text
     ([limitText[key](8:20)]) // limit text
 
 or
     
-    heavenjs.foreach(jsonObject,'model as data'); // advanced method
+    heavenjs.foreach(jsonObject,'model as data'); // advanced method work on default pattern
         heavenjs.model(function(model){
             var data=model.data; // define your model
             
@@ -49,9 +49,9 @@ or
                  
                  ...........
         });
-    
+        /* cainning method */
         heavenjs.foreach(jsonObject,'model as data').model(function(model){
-                var m=model.data; // defined model
+                var m=model.data; // define model
                 m.data.keys =function(value){ // 
                 
                             /* .. condition .. */
@@ -60,7 +60,7 @@ or
                             return value;
                         }
                 /* diferent way */        
-                m.pull=['id','price']; // pull id & price from your JSONObject
+                m.pull=['id','price']; // pull id & price from JSONObject
                 m.get= function (x) { // get your id & price after pulled
                     
                     /* .. condition .. */
@@ -73,22 +73,31 @@ or
                 return m; // return your model
             });
             
-            .pull='id'; // single value .get() function return string or int
-            .pull='all'; // pull all of JSONObject Value, return array
+            .pull='id'; // single value,  return string or int
+            .pull='all'; // pull all value of JSONObject, return array
             .pull=['id','price'] // pull some value of JSONObject, return array
             
-[reference:pattern keys](https://github.com/rachmanzz/heavenjs#pattern-keys)            
+[reference:: pattern keys](https://github.com/rachmanzz/heavenjs#pattern-keys)            
 
 
-#### Push
+## Push
+"push" and "foreach" is diferent, "foreach" looping your data, and "push" is pushing your data
 ##### html
-    <div push="x as item">
+    <!-- x as item model,feel free to change x for another character -->
+    <div push-data="x as item">
          ...........
     </div>
     
+##### push pattern
+    ([x:keys]) // default pattern
+    ([x:keys.keys]) // sub-object
+    ([x:keys*x:price-(1+2)]) // math
+    ([x:keys*x:price-(1+2)[number]]) // math \w number format
+    ([x:keys*2[number:en-US]]) // math \w US number format
+    
 ##### javascript
     heavenjs.push(function(x){
-        x=x.item;
+        x=x.item; // define model
             ............
         return x;
     });
