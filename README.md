@@ -91,7 +91,6 @@ or
 ##### push pattern
     ([x:keys]) // default pattern
     ([x:keys.keys]) // sub-object
-    ([x:keys*x:price-(1+2)]) // math
     ([x:keys*x:price-(1+2)[number]]) // math \w number format
     ([x:keys*2[number:en-US]]) // math \w US number format
     
