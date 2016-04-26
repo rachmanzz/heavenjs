@@ -105,8 +105,10 @@ or
     .data // object, push data to html
     .put.key // string/number, push data to html  
     
-diffrent way ( not recommended, whitespace is not allowed ) 
+diffrent way ( not recommended, whitespace is not allowed )
 
+    heavenjs.parseContent();
+    
     <div push-data="x as myitem{'price':1230,'home:{'city':'jakarta'}'}">
         ([x:price]), test subObject ([x:home.city]) 
     </div>
