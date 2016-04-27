@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Heavenjs : ">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Heavenjs</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/rachmanzz/heavenjs">View on GitHub</a>
+
+          <h1 id="project_title">Heavenjs</h1>
+          <h2 id="project_tagline"></h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/rachmanzz/heavenjs/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/rachmanzz/heavenjs/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="heavenjs" class="anchor" href="#heavenjs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>heavenjs</h1>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Documentation</h2>
+
+<h4>
+<a id="construct" class="anchor" href="#construct" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Construct</h4>
+
+<pre><code>var heavenjs=new heavenJS();
+var heavenjs=new heavenJS({control:'webApp'}); // with controller
+</code></pre>
+
+<h4>
+<a id="controller" class="anchor" href="#controller" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Controller</h4>
+
+<pre><code>//javascript
+heavenjs.control('webApp');
+
+//html
+&lt;div control="webApp"&gt;
+    .......
+&lt;/div&gt;
+</code></pre>
+
+<p>all of heavenJS function run inner control, that you must define control first</p>
+
+<h2>
+<a id="foreach--looping-data-" class="anchor" href="#foreach--looping-data-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>foreach ( looping data )</h2>
+
+<pre><code>heavenjs.foreach(jsonObject,'model'); // standard method
+
+    //html
+    &lt;ol model="model"&gt;
+        &lt;li&gt;.....&lt;/li&gt;
+    &lt;/ol&gt;
+</code></pre>
+
+<h6>
+<a id="pattern-keys" class="anchor" href="#pattern-keys" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pattern Keys</h6>
+
+<pre><code>([key]) // default pattern
+([num++]) // looping number
+([num[3]+]) // looping number from 3
+([replace[key](str)]) //delete str in value
+([replace[key](str:string)]) // replace str to string
+([numberFormat[key]]) // number format default
+([numberFormat[key](ar-EG)]) // Arabic, en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working 
+([math[key*key]]) // math
+([math[total*price+3(4-2)]]) // math
+([math[total*price+3(4-2)](default)]) // math with number format ; en-US , ja-JP, ar-SA, hi-IN, de-DE, zh-Hans-CN-u-nu-hanidec | array is not working
+([limitText[key](12)]) // limit text
+([limitText[key](8:20)]) // limit text
+</code></pre>
+
+<p>or</p>
+
+<pre><code>heavenjs.foreach(jsonObject,'model as data'); // advanced method work on default pattern
+    heavenjs.model(function(model){
+        var data=model.data; // define your model
+
+        /* your code here */
+
+             ...........
+    });
+    /* cainning method */
+    heavenjs.foreach(jsonObject,'model as data').model(function(model){
+            var m=model.data; // define model
+            m.data.keys =function(value){ // 
+
+                        /* .. condition .. */
+                        /* .. value is your jsonObject keys value .. */
+
+                        return value;
+                    }
+            /* diferent way */        
+            m.pull=['id','price']; // pull id &amp; price from JSONObject
+            m.get= function (x) { // get your id &amp; price after pulled
+
+                /* .. condition .. */
+                /* .. x is object value that has pulled .. */
+                /* .. try console.log(x) .. */
+
+                m.put.key=x; // replace pattern key with x value  
+            }
+
+            return m; // return your model
+        });
+
+        .pull='id'; // single value,  return string or int
+        .pull='all'; // pull all value of JSONObject, return array
+        .pull=['id','price'] // pull some value of JSONObject, return array
+</code></pre>
+
+<p><a href="https://github.com/rachmanzz/heavenjs#pattern-keys">reference:: pattern keys</a>            </p>
+
+<h2>
+<a id="push" class="anchor" href="#push" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Push</h2>
+
+<p>"push" and "foreach" is diferent, "foreach" looping your data, and "push" is pushing your data</p>
+
+<h5>
+<a id="html" class="anchor" href="#html" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>html</h5>
+
+<pre><code>&lt;!-- x as item model,feel free to change x for another character --&gt;
+&lt;div push-data="x as item"&gt;
+     ...........
+&lt;/div&gt;
+</code></pre>
+
+<h5>
+<a id="push-pattern" class="anchor" href="#push-pattern" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>push pattern</h5>
+
+<pre><code>([x:keys]) // default pattern
+([x:keys.keys]) // sub-object
+([x:keys*x:price-(1+2)[number]]) // math \w number format
+([x:keys*2[number:en-US]]) // math \w US number format
+</code></pre>
+
+<h5>
+<a id="javascript" class="anchor" href="#javascript" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>javascript</h5>
+
+<pre><code>heavenjs.push(function(x){
+    x=x.item; // define model
+        ............
+    return x;
+});
+
+.data // object, push data to html
+.put.key // string/number, push data to html  
+</code></pre>
+
+<p>diffrent way ( not recommended, whitespace is not allowed )</p>
+
+<pre><code>heavenjs.parseContent();
+
+&lt;div push-data="x as myitem{'price':1230,'home:{'city':'jakarta'}'}"&gt;
+    ([x:price]), test subObject ([x:home.city]) 
+&lt;/div&gt;
+</code></pre>
+
+<h4>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example</h4>
+
+<h6>
+<a id="--html" class="anchor" href="#--html" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>- HTML</h6>
+
+<pre><code>&lt;div control="myApp"&gt;
+    &lt;table&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;td&gt;#&lt;/td&gt;
+                &lt;td&gt;name&lt;/td&gt;
+                &lt;td&gt;price&lt;/td&gt;
+                &lt;td&gt;opinion&lt;/td&gt;
+            &lt;/tr&gt;    
+        &lt;/thead&gt;
+        &lt;tbody model="item"&gt;
+            &lt;tr&gt;
+                &lt;td&gt;([num++])&lt;/td&gt;
+                &lt;td&gt;([name])&lt;/td&gt;
+                &lt;td&gt;$([numberFormat[price]])&lt;/td&gt;
+                &lt;td&gt;([opinion])&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+        &lt;tfoot push-data="x as item"&gt;
+            &lt;tr&gt;
+                &lt;td colspan="3"&gt;
+                   Total
+                &lt;/td&gt;
+                &lt;td&gt;
+                    ([x:total])
+                &lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tfoot&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<h6>
+<a id="--javascript" class="anchor" href="#--javascript" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>- Javascript</h6>
+
+<pre><code>//json Object
+var myjson='[{"id":2,"name":"Asus phone","price":500,"date":"2016-04-21"},' +
+            '{"id":3,"name":"Lenovo phone","price":210,"date":"2016-04-22"},' +
+            '{"id":5,"name":"Alienware","price":61000,"date":"2016-04-22"}]';
+var total=0,heavenjs=new heavenJS({control:'myApp'});
+heavenjs.foreach($.parseJSON(myjson),'item as x').model(function(model){
+               var m=model.x;
+               m.pull='price';
+               m.get= function (x) {
+                total = total+x;
+                var myOpinion;
+                  if(x &lt;= 350){
+                    myOpinion="Low Price";
+                  }else if(x &lt;= 800){
+                    myOpinion="Normal Price";
+                  }else{
+                   myOpinion="expensive";
+                  }
+                   m.put.opinion=myOpinion; 
+               }        
+               return m;
+           });
+heavenjs.push(function(x){
+    x=x.item;
+    x.put.total=total;
+    return x;
+});
+</code></pre>
+
+<h5>
+<a id="change-symbol" class="anchor" href="#change-symbol" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>change symbol</h5>
+
+<pre><code>var heavenjs=new heavenJS(syBegin:"\\{\\{",syEnd:"\\}\\}");
+</code></pre>
+
+<p><a href="https://github.com/rachmanzz/heavenjs/tree/master/demo">Demo</a>    </p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Heavenjs maintained by <a href="https://github.com/rachmanzz">rachmanzz</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
