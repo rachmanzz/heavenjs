@@ -100,7 +100,7 @@
                             var result=mathValue;
                             mathValue=mathValue.match(/([_a-zA-Z0-9.]+)/gi);
                             for(var i=0; i < mathValue.length; i++){
-                                if(!(/[0-9]+/).test(mathValue[i])){
+                                if(!(/^[0-9]+$/).test(mathValue[i])){
                                     result=result.replace(mathValue[i],value[mathValue[i]]);
                                 }
                             }
@@ -335,14 +335,14 @@
                     if(getMatch(html) != null){
                         $.each(getMatch(html,'gi'), function (key,value) {
                             var pattern=getMatch(value)[1],result,getValue;
-                            if((/[-%*()-+:_a-zA-Z0-9]+\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\]/).test(pattern)){
-                                result = pattern.match(/([-%*()-+:_a-zA-Z0-9]+)(\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\])/);
+                            if((/[-%*()-/+:_a-zA-Z0-9]+\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\]/).test(pattern)){
+                                result = pattern.match(/([-%*()-/+:_a-zA-Z0-9]+)(\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\])/);
                                 if((/\[number|number:[_a-zA-Z0-9]+\]/).test(result[2])){
                                     var mathValue= function (mathValue) {
                                         var result=mathValue;
                                         mathValue=mathValue.match(new RegExp("([:_a-zA-Z0-9.]+)",'gi'));
                                         for(var i=0; i < mathValue.length; i++){
-                                            if(!(/[0-9]+/).test(mathValue[i])){
+                                            if(!(/^[0-9]+$/).test(mathValue[i])){
                                                 result=result.replace(mathValue[i],array[mathValue[i].match(new RegExp(data[1]+":([_a-zA-Z0-9]+)"))[1]]);
                                             }
                                         }
@@ -396,14 +396,14 @@
                 if(getLength(push.put)>=1 && new RegExp(key+":([_a-zA-Z0-9]+)").test(pattern) && typeof push.put[pattern.match(new RegExp(key+":([_a-zA-Z0-9]+)"))[1]] != 'undefined'){
                     html=html.replace(value,push.put[pattern.match(new RegExp(key+":([_a-zA-Z0-9]+)"))[1]]);
                 }
-                if((/[-%*()-+:_a-zA-Z0-9]+\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\]/).test(pattern)){
-                    result = pattern.match(/([-%*()-+:_a-zA-Z0-9]+)(\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\])/);
+                else if((/[-%*/()-+:_a-zA-Z0-9]+\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\]/).test(pattern)){
+                    result = pattern.match(/([-%*/()-+:_a-zA-Z0-9]+)(\[[_a-zA-Z]+[-:()_a-zA-Z0-9]+\])/);
                     if((/\[number|number:[_a-zA-Z0-9]+\]/).test(result[2])){
                         var mathValue= function (mathValue) {
                             var result=mathValue;
                             mathValue=mathValue.match(new RegExp("([:_a-zA-Z0-9.]+)",'gi'));
                             for(var i=0; i < mathValue.length; i++){
-                                if(!(/[0-9]+/).test(mathValue[i])){
+                                if(!(/^[0-9]+$/).test(mathValue[i])){
                                     result=result.replace(mathValue[i],array[mathValue[i].match(new RegExp(key+":([_a-zA-Z0-9]+)"))[1]]);
                                 }
                             }
