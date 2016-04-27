@@ -115,6 +115,27 @@
                         <h2>([s:about]) Story2</h2>
                         <p>Once upon a time there lived an ([s:isHappy]) young girl. Her mother was dead and her father had married a widow with ([s:family.daughters]) daughters. Her stepmother didn't like her one little bit. All her kind thoughts and loving touches were for her own daughters. Nothing was too good for them - dresses, shoes, delicious food, soft beds, and every home comfort.</p>
                     </div>
+                    <div push-data="c as item22">
+                        <h1>Math</h1>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>result</th>
+                                    <th>pattern</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="nama">234*3+1=([234*3+1[number]])</td>
+                                    <td>([c:number1])</td>
+                                </tr>
+                                <tr>
+                                    <td>34*21/4+43= ([c:y2*c:y/4+c:x3[number]])</td>
+                                    <td>([c:number2])</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,7 +150,6 @@
 
     var heavenjs= new heavenJS({control:"webApp"});
     heavenjs.parseContent();
-
     heavenjs.foreach($.parseJSON(myjson),'trx');
     //Advanced method
     heavenjs.foreach($.parseJSON(myjson),'trxItem as myItem');
@@ -185,6 +205,14 @@
         // .put & .data is diferent.
         return story;
     });
+    heavenjs.push(function (m) {
+        m= m.item22;
+        m.data={y:21,y2:34,x3:43};
+        m.put.number1="([234*3+1[number]])";
+        m.put.number2="([c:y2*c:y/4+c:x3[number]])";
+        return m;
+    });
+
 
 </script>
 </body>
