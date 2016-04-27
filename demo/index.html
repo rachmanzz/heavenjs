@@ -106,6 +106,15 @@
                         </tr>
                         </tfoot>
                     </table>
+                    <hr>
+                    <div push-data="s as story{'about':'Cinderella','family':{'daughters':'two'}}">
+                        <h2>([s:about]) Story</h2>
+                        <p>Once upon a time there lived an unhappy young girl. Her mother was dead and her father had married a widow with ([s:family.daughters]) daughters. Her stepmother didn't like her one little bit. All her kind thoughts and loving touches were for her own daughters. Nothing was too good for them - dresses, shoes, delicious food, soft beds, and every home comfort.</p>
+                    </div>
+                    <div push-data="s as story2">
+                        <h2>([s:about]) Story2</h2>
+                        <p>Once upon a time there lived an ([s:isHappy]) young girl. Her mother was dead and her father had married a widow with ([s:family.daughters]) daughters. Her stepmother didn't like her one little bit. All her kind thoughts and loving touches were for her own daughters. Nothing was too good for them - dresses, shoes, delicious food, soft beds, and every home comfort.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,6 +177,13 @@
         x=x.itemPrice;
         x.data.total=totalPrice;
         return x;
+    });
+    heavenjs.push(function (m) {
+        var story= m.story2;
+        story.data = {about:"Cinderella", family:{daughters:2}};
+        story.put.isHappy = "unhappy"; // just work for default pattern
+        // .put & .data is diferent.
+        return story;
     });
 
 </script>
