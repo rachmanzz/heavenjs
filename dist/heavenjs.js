@@ -162,7 +162,7 @@
         }
     }
     function getObjectProp(obj, str) {
-        var str = str.split(".");
+        str = str.split(".");
         while(str.length && (obj = obj[str.shift()]));
         return obj;
     }
@@ -220,6 +220,14 @@
             push(this);
         }
         return this;
+    };
+    heavenJS.prototype.modules = function (array) {
+        if(typeof array == "array"){
+            $.each(array, function (key,value) {
+                value == 'model' && each();
+                value == 'push' && each();
+            });
+        }
     };
     heavenJS.prototype.model= function (obj) {
         obj =obj(this.getModel());var model=obj.name, html, modelUri,Opt=this.getGlobal();
@@ -349,9 +357,9 @@
                                         return eval(result);
                                     };
                                     if((/number:[-_a-zA-Z0-9]+]/).test(result[2])){
-                                        result=new Intl.NumberFormat(result[2].match(/number:([-_a-zA-Z0-9]+)/)[1]).format(parseInt(mathValue(result[1])));
+                                        result=new Intl.NumberFormat(result[2].match(/number:([-_a-zA-Z0-9]+)/)[1]).format(mathValue(result[1]));
                                     }else{
-                                        result=new Intl.NumberFormat().format(parseInt(mathValue(result[1])));
+                                        result=new Intl.NumberFormat().format(mathValue(result[1]));
                                     }
                                     html=html.replace(value,result);
                                 }
@@ -435,5 +443,6 @@
     heavenJS.prototype.pagination= function () {
 
     };
+
     return heavenJS;
 });
