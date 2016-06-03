@@ -10,46 +10,28 @@
         };
     }
 })(window,jQuery, function ($) {
-    // non GLOBAL variable
-    var objectLength=function(l){
+    var objLength=function(l){
         var i=0;
         return typeof Object.keys(l).length != "undefined" ?
             Object.keys(l).length :
-            $.each(l,function(){
-                i++;
-            }) && i;
+        $.each(l,function(){
+            i++;
+        }) && i;
     };
-    var getObjectProp=function(obj, str) {
-        str = str.split(".");
-        while(str.length && (obj = obj[str.shift()]));
-        return obj;
-    };
-    var reaction= function (option) {
-        if(typeof option.storage != "undefined"){
-            var number ={
-                number : typeof option.storage.get[option.storage.model] != "undefined" &&
-                typeof option.storage.get[option.storage.model].number != "undefined"?
-                    option.storage.get[option.storage.model].number : 1,
-                numberSet:typeof option.storage.get[option.storage.model] != "undefined" &&
-                typeof option.storage.get[option.storage.model].numberSet != "undefined"?
-                    option.storage.get[option.storage.model].numberSet : false
-            };
-        }
-        return typeof option.sync != "undefined" &&
-            option.sync == true ? heavenJS.prototype.sync({
-            timing :option.timing,
-            run : function (x) {
-                x >= 1 && typeof option.storage != "undefined" && option.storage.set(option.storage.model,{number:number.number});
-                x >= 1 && typeof option.storage != "undefined" && option.storage.set(option.storage.model,{numberSet:number.numberSet});
-                option.run();
+    var indexOf= function (array,regex) {
+        var value=false;
+        $.each(array, function (i,v) {
+            if(regex.test(v)){
+                value = true;
             }
-            }) : option.run();
+        });
+        return value;
     };
-    var parseUri= function (method,url,data,callback) {
+    var parseURL= function (method,url,data,callback) {
         $.ajax({
             url:url,
             type:method.toUpperCase(),
-            data:typeof data != "undefined"? data:{},
+            data:typeof data == "object"? data:{},
             success: function(result,status,xhr){
                 typeof callback != "undefined" ?callback(result,status,xhr):data(result,status,xhr);
             },
@@ -59,7 +41,16 @@
         });
 
     };
-    var parseModel= function (data) {
+    var syncTask= function (option) {
+        return typeof option.sync != "undefined" &&
+        option.sync == true ? heavenJS.prototype.sync({
+            timing :option.timing,
+            run : function (x) {
+                option.run(x);
+            }
+        }) : option.run();
+    };
+    var forEachModule= function (data) {
         var symbol=data.symbol, convertHTML,pattern,result;
         var getMatch=function(str,flags){
             var reExp, Expression, result=null;
@@ -75,29 +66,29 @@
             return result;
         };
         $.each(data.object, function (index, value) {
-           if(typeof value !== "object"){
+            if(typeof value !== "object"){
                 console.log('Value is not JSON Object');
                 return false;
-           }
-           if(typeof data.model != "undefined"){
-               var pull={};
-               if(typeof data.model.pull == "object" && objectLength(data.model.pull) >= 1){
-                   for(var i=0; i<objectLength(data.model.pull);i++){
-                       if(typeof value[data.model.pull[i]] != 'undefined'){
-                           pull[data.model.pull[i]]=value[data.model.pull[i]];
-                       }
-                   }
-               }
-               if(typeof data.model.pull == 'string' && data.model.pull.toLowerCase() == 'all'){
-                   pull=value;
-               }
-               else if(typeof data.model.pull == 'string' && data.model.pull != ''){
-                   if(typeof value[data.model.pull] != 'undefined'){
-                       pull = value[data.model.pull];
-                   }
-               }
-               data.model.get(pull);
-           }
+            }
+            if(typeof data.model != "undefined"){
+                var pull={};
+                if(typeof data.model.pull == "object" && objectLength(data.model.pull) >= 1){
+                    for(var i=0; i<objectLength(data.model.pull);i++){
+                        if(typeof value[data.model.pull[i]] != 'undefined'){
+                            pull[data.model.pull[i]]=value[data.model.pull[i]];
+                        }
+                    }
+                }
+                if(typeof data.model.pull == 'string' && data.model.pull.toLowerCase() == 'all'){
+                    pull=value;
+                }
+                else if(typeof data.model.pull == 'string' && data.model.pull != ''){
+                    if(typeof value[data.model.pull] != 'undefined'){
+                        pull = value[data.model.pull];
+                    }
+                }
+                data.model.get(pull);
+            }
             convertHTML= data.html;
             $.each(getMatch(data.html,'gi'), function (index,patternValue) {
                 pattern = getMatch(patternValue)[1].replace(/\s/g,'');
@@ -120,14 +111,12 @@
                     };
                     if(pattern == 'num++'){
                         convertHTML=convertHTML.replace(patternValue,data.storage.number++);
-                        data.storage.set({number:data.storage.number});
                     }
                     else if((/num\[\d+\]\+/).test(pattern)){
                         if(data.storage.numberSet==false){
                             data.storage.numberSet=(pattern.match(/num\[(\d+)\]\+/))[1];
                         }
                         convertHTML=convertHTML.replace(patternValue,data.storage.numberSet++);
-                        data.storage.set({numberSet:data.storage.numberSet});
                     }
                     else if(/[*)(-=/%\w\d]+\[[-_#$@(:)\w\d]+\]/.test(pattern)){
                         result=pattern.match(/([*)(-=/%\w\d]+)\[([-_#$@(:)\w\d]+)\]/);
@@ -170,10 +159,10 @@
                     }
                 }
             });
-            data.modelTag.append(convertHTML);
+            data.module.append(convertHTML);
         });
     };
-    var parsePushdata = function (data) {
+    var pushModule = function (data) {
         var symbol=data.symbol, convertHTML, pattern, result, value;
         var getMatch=function(str,flags){
             var reExp, Expression, result=null;
@@ -187,6 +176,11 @@
                 result =str.match(Expression);
             }
             return result;
+        };
+        var keys=null;
+        var expression= function (data) {
+            data = keys != null ? keys + ':' + data : data;
+            return new RegExp(data);
         };
         convertHTML=data.pushTag.html();
         data.pushTag.html("");
@@ -265,24 +259,20 @@
         });
         data.pushTag.append(convertHTML);
     };
-    var indexOf= function (array,regex) {
-        var value=false;
-        $.each(array, function (i,v) {
-            if(regex.test(v)){
-                value = true;
-            }
-        });
-        return value;
+    var getObjectProp=function(obj, str) {
+        str = str.split(".");
+        while(str.length && (obj = obj[str.shift()]));
+        return obj;
     };
-
-    // heavenJS function
+    // heavenJS Construct
     var heavenJS = function (option) {
-        var controller, storage={},dataPush={}, model={},assets={syBegin:"\\(\\[",syEnd:"\\]\\)"};
+        var assets = {syBegin:"\\(\\[",syEnd:"\\]\\)"};
+        var controller, storage={};
         if(typeof option !== 'undefined' && typeof option.control !== 'undefined'){
             controller = option.control;
             delete option.control;
         }
-        typeof option !== 'undefined' && objectLength(option) >= 1 && $.extend(assets,option);
+        typeof option != 'undefined' && typeof option == "object" && objLength(option) >= 1 && $.extend(assets,option);
         this.setController = function (c) {
             controller = c;
         };
@@ -307,157 +297,129 @@
         this.setController(control);
         return this;
     };
-    heavenJS.prototype.modules= function (modules,option) {
-        var controller=this.getController(),uri, getStorage=this.getStorage(), setStorage=this.setStorage;
-        var symbol={
-            begin : this.getAssets().syBegin,
-            end : this.getAssets().syEnd
+    heavenJS.prototype.modules = function (modules,option) {
+        var controller=this.getController(), setStorage=this.setStorage,storage=this.getStorage();
+        var module, model, symbol={begin : this.getAssets().syBegin,end : this.getAssets().syEnd};
+        var ExploreModules = function (moduleName,module,eventData) {
+            console.log(moduleName);
+            if(typeof moduleName != "undefined" && typeof moduleName == "string" && moduleName == 'forEach' && typeof module != "undefined"){
+                var forEachExpression = typeof eventData != "undefined" ?
+                    /^[\w\d]+\.bind\.url:[\w]+\[[\w\W\d]+\]|^[\w\d]+\.bind\.[\w]+\[[\w\W\d]+\]/ :
+                    /^[\w\d]+\.url:[\w]+\[[\w\W\d]+\]|^[\w\d]+\.[\w]+\[[\w\W\d]+\]/;
+                if(forEachExpression.test(module.attr('forEach'))){
+                    var uri = module.attr('forEach').match(/([\w]+)\[([\w\W\d]+)\]/);
+                    var model = module.attr('forEach').match(/(^[\w\d]+)\.[\w]+/)[1], html = typeof eventData != "undefined" ? eventData[model].html : module.html(), data={};
+                    typeof module.attr('put-data') != "undefined" && $.extend(data,$.parseJSON(module.attr('put-data').replace(/'/g,'"')));
+                    typeof eventData != "undefined" && $.extend(data,eventData[model].input);
+                        syncTask({
+                            sync:typeof module.attr('sync-timing') != "undefined",
+                            timing:typeof module.attr('sync-timing') != "undefined" ? parseInt(module.attr('sync-timing')) : 2000,
+                            run: function () {
+                                parseURL(uri[1],uri[2],data, function (data, status) {
+                                    module.html('');
+                                    status == 'success' && forEachModule({
+                                        symbol:symbol,
+                                        object:typeof module.attr('select-data') != "undefined" && typeof getObjectProp(JSON.parse(data),model.attr('select-data')) ?getObjectProp(JSON.parse(data),model.attr('select-data')): JSON.parse(data),
+                                        html:html,
+                                        module:module,
+                                        storage:{
+                                            number : 1,
+                                            setNumber:false
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                }
+            }
+            if(typeof moduleName != "undefined" && typeof moduleName == "string" && moduleName == 'push' && typeof module != "undefined"){
+                var regExp = /^[\w]+ as [\w\d]+\.url:[\w]+\[[\w\W\d]+\]|^[\w]+ as [\w\d]+\.[\w]+\[[\w\W\d]+\]|^[\w\d]+\.url:[\w]+\[[\w\W\d]+\]|^[\w\d]+\.[\w]+\[[\w\W\d]+\]/;
+                if(regExp.test(module.attr('push-data'))){
+
+                }
+            }
         };
-        function eachModel(model){
-            if(/^[\w\d]+\.url:[\w]+\[[\w\W\d]+\]$|^[\w\d]+\.[\w]+\[[\w\W\d]+\]$/.test(model.attr('model'))){
-                uri=model.attr('model').match(/([\w]+)\[([\w\W\d]+)\]/);
-                var html=model.html(),getModel=model.attr('model').match(/([\w\d]+)\.[\w]+/)[1];
-                if(typeof model.attr('put-data') != "undefined"){
-                    reaction({
-                        sync:typeof model.attr('sync-timing') != "undefined",
-                        timing:typeof model.attr('sync-timing') != "undefined"?parseInt(model.attr('sync-timing')):2000,
-                        storage:{
-                            model:getModel,
-                            get:getStorage,
-                            set: setStorage
-                        },
-                        run : function(){
-                            parseUri(uri[1],uri[2],model.attr('put-data').replace(/[']/g,'"'), function (data,status) {
-                                if(typeof getStorage[getModel] != 'undefined'){
-                                    if(typeof getStorage[getModel].html != 'undefined')
-                                        html = getStorage[getModel].html;
-                                }else{
-                                    setStorage(getModel,{html:html});
-                                }
-                                var setNumber=function (obj) {
-                                    setStorage(getModel,obj);
-                                };
-                                model.html('');
-                                status == 'success' && parseModel({
-                                    symbol:symbol,
-                                    object:typeof model.attr('select-data') != "undefined" && typeof getObjectProp(JSON.parse(data),model.attr('select-data')) ?getObjectProp(JSON.parse(data),model.attr('select-data')): JSON.parse(data),
-                                    html:html,
-                                    modelTag:model,
-                                    storage:{
-                                        number:typeof getStorage[getModel].number == "undefined" ? 1 : getStorage[getModel].number,
-                                        numberSet: typeof getStorage[getModel].numberSet == "undefined" ? false : getStorage[getModel].numberSet,
-                                        set:setNumber
-                                    }
-                                });
+        if(modules.indexOf('event')>=0){
+            module=controller.find('*[event-handler]');
+            var event ={onChange:'change',onKeyup:'keyup'},event_data,moduleName;
+            typeof module.attr('event-handler') != "undefined" &&
+                module.each(function () {
+                    if(/^[\w]+ module\[[\w\.]+\]$/.test(module.attr('event-handler'))){
+                        event_data =module.attr('event-handler').match(/^([\w]+) module\[([\w\.]+)\]$/);
+                        event_data[2]=event_data[2].match(/^(\w+)\.(\w+)$/);
+                        moduleName=event_data[2][1];
+                        model=event_data[2][2];
+                        var eventData={};
+                        if(moduleName=='forEach'){
+                            module= controller.find('*[forEach^="'+model+'.bind"]');
+                            if(typeof eventData[model] == "undefined"){
+                                eventData[model] = {html: module.html(),input:{}};
+                            }
+                            module.html('');
+                            typeof event[event_data[1]] != "undefined" &&
+                            $(this).on(event[event_data[1]] , function(event) {
+                                module= controller.find('*[forEach^="'+model+'.bind"]');
+                                eventData[model]['input'][$(this).attr('name')] = $(this).val();
+                                ExploreModules(moduleName,module,eventData);
+                                event.preventDefault();
                             });
                         }
-                    });
-                }else{
-                    reaction({
-                        sync:typeof model.attr('sync-timing') != "undefined",
-                        timing:typeof model.attr('sync-timing') != "undefined"?parseInt(model.attr('sync-timing')):2000,
-                        storage:{
-                            model:getModel,
-                            get:getStorage,
-                            set: setStorage
-                        },
-                        run : function(){
-                            parseUri(uri[1],uri[2], function (data,status) {
-                                if(typeof getStorage[getModel] != 'undefined'){
-                                    if(typeof getStorage[getModel].html != 'undefined')
-                                        html = getStorage[getModel].html;
-                                }else{
-                                    setStorage(getModel,{html:html});
-                                }
-                                var setNumber=function (obj) {
-                                    setStorage(getModel,obj);
-                                };
-                                model.html('');
-                                status == 'success' && parseModel({
-                                    symbol:symbol,
-                                    object:typeof model.attr('select-data') != "undefined" && typeof getObjectProp(JSON.parse(data),model.attr('select-data')) ?getObjectProp(JSON.parse(data),model.attr('select-data')): JSON.parse(data),
-                                    html:html,
-                                    modelTag:model,
-                                    storage:{
-                                        number:typeof getStorage[getModel].number == "undefined" ? 1 : getStorage[getModel].number,
-                                        numberSet: typeof getStorage[getModel].numberSet == "undefined" ? false : getStorage[getModel].numberSet,
-                                        set:setNumber
-                                    }
-                                });
-                            });
-                        }
-                    });
-                }
-            }
-        }
-        function eachPush(push){
-            if(/^[\w]+ as [\w\d]+\.url:[\w]+\[[\w\W\d]+\]$|^[\w]+ as [\w\d]+\.[\w]+\[[\w\W\d]+\]$/.test(push.attr('push-data'))){
-                console.log(push.attr('push-data').match(/^[\w]+ as [\w\d]+\.url:[\w]+\[[\w\W\d]+\]$|^[\w]+ as [\w\d]+\.[\w]+\[[\w\W\d]+\]$/));
-            }
-            if(/^[\w]+ as [\w\d]+\{[\w\W\d\s]+\}$/.test(push.attr('push-data'))){
-                var object = push.attr('push-data').match(/^[\w]+ as [\w\d]+(\{[\w\W\d\s]+\})$/)[1];
-                object=JSON.parse(object.replace(/'/g,'"'));
-                parsePushdata({
-                    symbol : symbol,
-                    object :object,
-                    pushTag:push
+                    }
                 });
-            }
         }
-        if(modules.indexOf('model')>=0){
-            var model=controller.find('*[model]'),getModel;
-            typeof model.attr('model') != "undefined" &&
-            model.each(function(){
-                model = $(this);
-                if(/^[\w\d]+\.[\w]+/.test($(this).attr('model')) && typeof option != "undefined" && typeof option.except != "undefined" && indexOf(option.except,/model\.[\w\d]+/)){
-                    getModel=$(this).attr('model').match(/([\w\d]+)\.[\w]+/)[1];
+        if(modules.indexOf('forEach')>=0){
+            module=controller.find('*[forEach]');
+            typeof module.attr('forEach') != "undefined" &&
+            module.each(function(){
+                module = $(this);
+                var forEach = module.attr('forEach');
+                if(/^[\w\d]+\.[\w]+/.test(forEach) && typeof option != "undefined" && typeof option.except != "undefined" && indexOf(option.except,/forEach\.[\w\d]+/)){
+                    model=forEach.match(/([\w\d]+)\.[\w]+/)[1];
                     $.each(option.except, function (i,value) {
-                        if(/model\.[\w\d]+/.test(value) && value.match(/model\.([\w\d]+)/)[1] != getModel){
-                            eachModel(model);
+                        if(/forEach\.[\w\d]+/.test(value) && value.match(/forEach\.([\w\d]+)/)[1] != model){
+                            ExploreModules('forEach',module);
                         }
                     });
                 }
-                else if(/^[\w\d]+\.[\w]+/.test($(this).attr('model')) && typeof option != "undefined" && typeof option.only != "undefined" && indexOf(option.only,/model\.[\w\d]+/)){
-                    getModel=$(this).attr('model').match(/([\w\d]+)\.[\w]+/)[1];
+                else if(/^[\w\d]+\.[\w]+/.test($(this).attr('forEach')) && typeof option != "undefined" && typeof option.only != "undefined" && indexOf(option.only,/forEach\.[\w\d]+/)){
+                    model=$(this).attr('forEach').match(/([\w\d]+)\.[\w]+/)[1];
                     $.each(option.only, function (i,value) {
-                        if(/model\.[\w\d]+/.test(value) && value.match(/model\.([\w\d]+)/)[1] == getModel){
-                            eachModel(model);
+                        if(/forEach\.[\w\d]+/.test(value) && value.match(/forEach\.([\w\d]+)/)[1] == model){
+                            ExploreModules('forEach',module);
                         }
                     });
                 }
                 else{
-                    eachModel(model);
+                    ExploreModules('forEach',module);
                 }
             });
         }
         if(modules.indexOf('push')>=0){
-            var push=controller.find('*[push-data]'),getPush;
-            typeof  push.attr('push-data') != "undefined" &&
-                push.each(function () {
-                    push= $(this);
-                    if(/^[\w]+ as [\w\d]+\.[\w]+|^[\w]+ as [\w\d]+\{[\W\w\d\s]+\}$/.test($(this).attr('push-data')) && typeof option != "undefined" && typeof option.except != "undefined" && indexOf(option.except,/push\.[\w\d]+/)){
-                        getPush=$(this).attr('push-data').match(/[\w]+ as ([\w\d]+)/)[1];
-                        $.each(option.except, function (i,value) {
-                            if(/push\.[\w\d]+/.test(value) && value.match(/push\.([\w\d]+)/)[1] != getPush){
-                                console.log('here');
-                            }
-                        });
-                    }
-                    else if(/^[\w]+ as [\w\d]+\.[\w]+|^[\w]+ as [\w\d]+\{[\W\w\d\s]+\}$/.test($(this).attr('push-data')) && typeof option != "undefined" && typeof option.only != "undefined" && indexOf(option.only,/push\.[\w\d]+/)){
-                        getPush=$(this).attr('push-data').match(/[\w]+ as ([\w\d]+)/)[1];
-                        $.each(option.only, function (i,value) {
-                            if(/push\.[\w\d]+/.test(value) && value.match(/push\.([\w\d]+)/)[1] == getPush){
-                                console.log('here is only');
-                            }
-                        });
-                    }
-                    else{
-                            eachPush($(this));
-                    }
-                });
+            module=controller.find('*[push-data]');
+            typeof  module.attr('push-data') != "undefined" &&
+            module.each(function () {
+                module= $(this);
+                if(/^[\w]+ as [\w\d]+\.[\w]+|^[\w]+ as [\w\d]+\{[\W\w\d\s]+\}$|^[\w\d]+\.[\w]+/.test(module.attr('push-data')) && typeof option != "undefined" && typeof option.except != "undefined" && indexOf(option.except,/push\.[\w\d]+/)){
+                    model=$(this).attr('push-data').match(/([\w\d]+)\.[\w]+/)[1];
+                    $.each(option.except, function (i,value) {
+                        if(/push\.[\w\d]+/.test(value) && value.match(/push\.([\w\d]+)/)[1] != model){
+                            ExploreModules('push',module);
+                        }
+                    });
+                }
+                else if(/^[\w]+ as [\w\d]+\.[\w]+|^[\w]+ as [\w\d]+\{[\W\w\d\s]+\}$|^[\w\d]+\.[\w]+/.test($(this).attr('push-data')) && typeof option != "undefined" && typeof option.only != "undefined" && indexOf(option.only,/push\.[\w\d]+/)){
+                    model=$(this).attr('push-data').match(/([\w\d]+)\.[\w]+/)[1];
+                    $.each(option.only, function (i,value) {
+                        if(/push\.[\w\d]+/.test(value) && value.match(/push\.([\w\d]+)/)[1] == model){
+                            ExploreModules('push',module);
+                        }
+                    });
+                }
+                else{
+                    ExploreModules('push',module);
+                }
+            });
         }
-
-        return this;
     };
     heavenJS.prototype.sync= function (sync) {
         var timing=typeof sync.timing != "undefined" ? sync.timing : 2000;
