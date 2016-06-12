@@ -30,6 +30,7 @@ html atribut to define controller
         
 ### Modules
 Define a modules, to automatically  render a module.
+
         web.modules(['event','forEach']); // define only module that you need
         web.modules(['forEach'],{except : ['forEach.model']}); // skip model to render
         web.modules(['forEach'],{only : ['forEach.model','forEach.item']}); 
@@ -37,6 +38,7 @@ Define a modules, to automatically  render a module.
 
 #### forEach
 forEach ( looping data )
+
         <table>
             <thead>
                 <tr>
