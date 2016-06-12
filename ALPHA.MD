@@ -12,17 +12,17 @@
  
 ## Documentation
 To start writing heavenJS script, need to define new heavenJS construct
-    var web=new heavenJS();
-    // with controller
-    var web=new heavenJS({control:'webApp'});
+        var web=new heavenJS();
+        // with controller
+        var web=new heavenJS({control:'webApp'});
     
 ## Controller
 separate definitions "controller"
-    web.control('webApp');
+        web.control('webApp');
     
 html atribut to define controller
-    <div control="webApp">
-    .......
-    </div>
+        <div control="webApp">
+        .......
+        </div>
     
     
