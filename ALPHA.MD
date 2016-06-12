@@ -52,9 +52,41 @@ forEach ( looping data )
             </tbody>
         </table>
         
+more option :
+
+    .url:get | .get // get method
+    .url:post | .post // post method
+    .bind.url:get | .bind.get // binding event handler 
+    
+more attribut
+    
+    sync-timing="2000" // automatically sync new data
+    put-data="{'id':'1'}" // put data when ajax request
+    select-data="item.child" // select cild object of json object result
+    
+
+#### event
+Event handler. Handling event onCHange and onKeyup to make automatically request ajax.
+
+    <select name="barang" event-handler="onChange module[forEach.item]">
+            <option value="iphone">Iphone</option>
+            <option value="samsung">Samsung</option>
+    </select>
         
 
-        
+    <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>name</th><th>price</th>
+                </tr>
+            <thead>
+            <tbody forEach="item.bind.post['http://yoururl/myjson.php']">
+                <tr>
+                    <td>([ num++ ])</td><td>([ name ])</td><td>([ price ])</td>
+                </tr>
+            </tbody>
+    </table>
 
     
-    
+### other function
+    .forEach and .push function not yet aviliable...
