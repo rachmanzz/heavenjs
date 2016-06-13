@@ -301,7 +301,6 @@
         var controller=this.getController(), setStorage=this.setStorage,storage=this.getStorage();
         var module, model, symbol={begin : this.getAssets().syBegin,end : this.getAssets().syEnd};
         var ExploreModules = function (moduleName,module,eventData) {
-            console.log(moduleName);
             if(typeof moduleName != "undefined" && typeof moduleName == "string" && moduleName == 'forEach' && typeof module != "undefined"){
                 var forEachExpression = typeof eventData != "undefined" ?
                     /^[\w\d]+\.bind\.url:[\w]+\[[\w\W\d]+\]|^[\w\d]+\.bind\.[\w]+\[[\w\W\d]+\]/ :
