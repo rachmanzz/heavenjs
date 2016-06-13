@@ -6,7 +6,7 @@
     
 
 ## What's new ?
- - removed model attribut, change with forEach
+ - remove model attribute, and change with forEach
  - ajax request with easy setup
  - event handler
  
@@ -22,7 +22,7 @@ separate definitions "controller"
 
         web.control('webApp');
     
-html atribut to define controller
+html atribute to define controller
 
         <div control="webApp">
         .......
@@ -64,6 +64,15 @@ more attribut
     put-data="{'id':'1'}" // put data when ajax request
     select-data="item.child" // select cild object of json object result
     
+###### pattern keys
+        ([ key ])                       >> default key
+        ([ key+key*3 ])                 >> math
+        ([ key [number]])               >> definea number format
+        ([ key [remove:trx] ])          >> remove trx from text
+        ([ num++ ])                     >> looping number
+        ([ num[5]+ ])                   >> looping number from 5
+        ([ key [replace(key:key2)]])    >> replace key to key2
+        ([ key [limit:12]])             >> limit text 12 character
 
 #### event
 Event handler. Handling event onCHange and onKeyup to make automatically request ajax.
