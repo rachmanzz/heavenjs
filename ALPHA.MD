@@ -6,12 +6,12 @@
     
 
 ## What's new ?
- - remove model attribute, and change with forEach
+ - Model attribute replaced by forEach
  - ajax request with easy setup
  - event handler
  
 ## Documentation
-To start writing heavenJS script, need to define new heavenJS construct
+To start writing heavenJS, need to define new heavenJS construct
 
         var web=new heavenJS();
         // with controller
@@ -22,21 +22,21 @@ separate definitions "controller"
 
         web.control('webApp');
     
-html atribute to define controller
+control attribute (html directive)   
 
         <div control="webApp">
         .......
         </div>
         
 ### Modules
-Define a modules, to automatically  render a module.
+define a modules, to execute module function.
 
         web.modules(['event','forEach']); // define only module that you need
-        web.modules(['forEach'],{except : ['forEach.model']}); // skip model to render
+        web.modules(['forEach'],{except : ['forEach.model']}); // skip model
         web.modules(['forEach'],{only : ['forEach.model','forEach.item']}); 
 
 
-#### forEach
+#### forEach module
 forEach ( looping data )
 
         <table>
@@ -58,7 +58,7 @@ more option :
     .url:post | .post // post method
     .bind.url:get | .bind.get // binding event handler 
     
-more attribut
+more attribute
     
     sync-timing="2000" // automatically sync new data
     put-data="{'id':'1'}" // put data when ajax request
@@ -74,7 +74,7 @@ more attribut
         ([ key [replace(key:key2)]])    >> replace key to key2
         ([ key [limit:12]])             >> limit text 12 character
 
-#### event
+#### event module
 Event handler. Handling event onCHange and onKeyup to make automatically request ajax.
 
     <select name="barang" event-handler="onChange module[forEach.item]">
