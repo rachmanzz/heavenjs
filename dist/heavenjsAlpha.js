@@ -318,7 +318,7 @@
                                     module.html('');
                                     status == 'success' && forEachModule({
                                         symbol:symbol,
-                                        object:typeof module.attr('select-data') != "undefined" && typeof getObjectProp(JSON.parse(data),model.attr('select-data')) ?getObjectProp(JSON.parse(data),model.attr('select-data')): JSON.parse(data),
+                                        object:typeof module.attr('select-data') != "undefined" && typeof getObjectProp(JSON.parse(data),model.attr('select-data')) ?getObjectProp(JSON.parse(data.toString()),model.attr('select-data')): JSON.parse(data.toString()),
                                         html:html,
                                         module:module,
                                         storage:{
