@@ -45,7 +45,7 @@ forEach ( looping data )
                     <th>#</th><th>name</th><th>price</th>
                 </tr>
             <thead>
-            <tbody forEach="item.url:get['http://yoururl/myjson.php']">
+            <tbody forEach="item.url:get[http://yoururl/myjson.php]">
                 <tr>
                     <td>([ num++ ])</td><td>([ name ])</td><td>([ price ])</td>
                 </tr>
@@ -89,7 +89,7 @@ Event handler. Handling event onCHange and onKeyup to make automatically request
                     <th>#</th><th>name</th><th>price</th>
                 </tr>
             <thead>
-            <tbody forEach="item.bind.post['http://yoururl/myjson.php']">
+            <tbody forEach="item.bind.post[http://yoururl/myjson.php]">
                 <tr>
                     <td>([ num++ ])</td><td>([ name ])</td><td>([ price ])</td>
                 </tr>
