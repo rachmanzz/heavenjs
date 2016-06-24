@@ -301,7 +301,6 @@
         var controller=this.getController(), setStorage=this.setStorage,storage=this.getStorage();
         var module, model, symbol={begin : this.getAssets().syBegin,end : this.getAssets().syEnd};
         var ExploreModules = function (moduleName,module,eventData) {
-            console.log(moduleName);
             if(typeof moduleName != "undefined" && typeof moduleName == "string" && moduleName == 'forEach' && typeof module != "undefined"){
                 var forEachExpression = typeof eventData != "undefined" ?
                     /^[\w\d]+\.bind\.url:[\w]+\[[\w\W\d]+\]|^[\w\d]+\.bind\.[\w]+\[[\w\W\d]+\]/ :
@@ -317,9 +316,10 @@
                             run: function () {
                                 parseURL(uri[1],uri[2],data, function (data, status) {
                                     module.html('');
+                                    data = typeof data == 'string' ? JSON.parse(data) : typeof data == 'object' && data;
                                     status == 'success' && forEachModule({
                                         symbol:symbol,
-                                        object:typeof module.attr('select-data') != "undefined" && typeof getObjectProp(JSON.parse(data),model.attr('select-data')) ?getObjectProp(JSON.parse(data),model.attr('select-data')): JSON.parse(data),
+                                        object:typeof module.attr('select-data') != "undefined" && typeof getObjectProp(data,model.attr('select-data')) ?getObjectProp(JSON.parse(data),model.attr('select-data')): data,
                                         html:html,
                                         module:module,
                                         storage:{
