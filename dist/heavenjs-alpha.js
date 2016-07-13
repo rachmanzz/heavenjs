@@ -10,6 +10,7 @@
         };
     }
 })(window,jQuery, function ($) {
+    var alias={};
     var objLength=function(l){
         var i=0;
         return typeof Object.keys(l).length != "undefined" ?
@@ -118,7 +119,7 @@
                         }
                         convertHTML=convertHTML.replace(patternValue,data.storage.numberSet++);
                     }
-                    else if(/[*)(-=/%\w\d]+\[[-_#$@(:)\w\d]+\]/.test(pattern)){
+                    else if(/[*)(-=/%\w\d]+\[[-_#$@(:)\w\d]+\]|[*)(-=/%\w\d]+\\As[\w\d]+\[[-_#$@(:)\w\d]+\]/.test(pattern)){
                         result=pattern.match(/([*)(-=/%\w\d]+)\[([-_#$@(:)\w\d]+)\]/);
                         if(/remove:[_#$@(:)\w\d]+/.test(result[2])){
                             result[2]=result[2].match(/remove:([_#$@(:)\w\d]+)/);
