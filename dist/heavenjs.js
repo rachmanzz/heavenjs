@@ -24,7 +24,7 @@
                 if(this.status != 200)
                     arg(this.status,'error');
             };
-            typeof xhttp.send();
+            typeof obj.data != "undefined" ? xhttp.send(obj.data) : xhttp.send();
         }
         ;
     var hv = function (arg) {
