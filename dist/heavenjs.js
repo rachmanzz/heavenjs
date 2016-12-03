@@ -63,7 +63,6 @@
                 }else{
                     if(pattern == 'num++'){
                         convertHtml=convertHtml.replace(val,each.number++);
-                        each.setStorageAsset({number:each.number});
                     }
                     else if((/num\[\d+\]\+/).test(pattern)){
                         if(each.hasNumber==false){
@@ -71,7 +70,6 @@
                             each.hasNumber=true;
                         }
                         convertHtml=convertHtml.replace(val,each.numberSet++);
-                        each.setStorageAsset({numberSet:each.numberSet});
                     }
                     else if((/replace\[[_a-zA-Z0-9.]+\]\([ #:_a-zA-Z0-9.]+\)/).test(pattern)){
                         var getAttribute, hasReplace=(pattern.match(/replace\[([_a-zA-Z0-9.]+)\]\(([ #:_a-zA-Z0-9.]+)\)/));
