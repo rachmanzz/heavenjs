@@ -53,50 +53,26 @@
         this.setHvObj = function (obj) {
             hvObj=Object.assign(obj,hvObj);
         };
-        this.getHvOb = hvObj;
+        this.getHvObj = function(){
+          return hvObj;
+        };
+        this.init=function(){
+
+        }
+        this.get = function () {
+          return {setHvObj:this.setHvObj,getHvObj:this.getHvObj};
+        };
         typeof arg === "object" && this.setHvObj(arg);
-        typeof hvObj.control != "undefined" && typeof hvObj.commandExclusive !== "undefined" && hvObj.commandExclusive && hv.prototype.modules.commandExclusive();
+        typeof hvObj.control != "undefined" && typeof hvObj.commandExclusive !== "undefined" && hvObj.commandExclusive && hv.prototype.modules();
 
     }
-
     hv.prototype.control = function (controller) {
         typeof controller === "string" && this.setHvObj({control:controller});
         return this;
     }
-    hv.prototype.modules = {
-        commit : function (par) {
-            if(isArray(par))
-                par.forEach(function (el) {
-                    /^forEach$|^[\w]+\.forEach$/.test(el) ?
-                        console.log('forEach') :
-                        /^push|^[\w]+\.push$/.test(el) &&
-                            console.log('push');
-                });
-        },
-        commandExclusive : function () {
-        var hvObj=this.getHvOb,
-            setHvObj=this.setHvObj,
-            parentSelector=document.querySelector('[control="'+hvObj.control+'"]');
+    hv.prototype.modules = function(){
+      console.log(this);
 
-        var html = parentSelector.innerHTML;
-        var varb = html.match(/<!--:[\[\]\:\@\/\.\,\>\<\=\s\t\w]+:-->/g);
-        varb.forEach(function (i) {
-            var par =i.match(/<!--:([\[\]\:\@\/\.\,\>\<\=\s\t\w]+):-->/)[1], // index paramenter
-                Res=par.match(/\@[\w]+ :: [\w\[\]\:\/\.\s]+|[\w]+ :: [\w]+ as [\w]+\.\s[<>\/\w\s:]+::end\./gi);
-            Res.forEach(function (result) {
-                if(/\@[\w]+/.test(result) && parseVariable(result).ajaxReq){
-                    reqAjax(parseVariable(result),function (a,v) {
-                        setHvObj({data:{web:'23'}});
-                        console.log(hvObj);
-                    })
-                }
-
-
-            });
-
-        });
-        //console.log(varb);
-    }
     }
     return hv;
 });
