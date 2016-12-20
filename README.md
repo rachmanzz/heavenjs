@@ -7,8 +7,10 @@
     var hv = new heavenJS({
       control: "webApp",
       commandExclusive:true,
-      modules :{
-        // call module
+      data : {
+        a : {
+          send : {id:1}
+        }
       }
       });
 
