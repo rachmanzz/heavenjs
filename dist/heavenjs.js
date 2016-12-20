@@ -25,7 +25,7 @@
                 if(this.status != 200)
                     arg(this.status,'error');
             };
-            typeof obj.data != "undefined" ? xhttp.send(obj.data) : xhttp.send();
+            typeof obj.send != "undefined" ? xhttp.send(obj.send) : xhttp.send();
         },
         parseVariable = function (v) {
             var Case,variable={test:false};
@@ -58,12 +58,6 @@
           }
           return obj;
         };
-    var module = function(){
-      this.modules = {}
-      this.registerModule = function(m,arg){
-        this.modules[m] = arg;
-      }
-    }
     var hv = function (arg) {
         var hvObj ={data:{},autoRender:true},rawTpl;
 
@@ -78,29 +72,58 @@
         };
 
         this.commandExclusive = function() {
+          // controller  selector
             var parentSelector = document.querySelector('[control="'+hvObj.control+'"]');
+            // Check if raw Template is undefined & save html Template
             if(typeof rawTpl == 'undefined') rawTpl=parentSelector.innerHTML;
+            //find match template of heavenJS command && process command
             rawTpl.match(/<!--:[\[\]\:\@\/\.\,\>\<\=\s\t\w]+:-->/g)
-              .forEach(function(iHvCode){
+              .forEach(function(iHvCode){ // get global command
                 var rawCode =iHvCode.match(/<!--:([\[\]\:\@\/\.\,\>\<\=\s\t\w]+):-->/)[1]; // index paramenter
+                console.log("raw Code :" + rawCode);
                 rawCode.match(/\@[\w]+ :: [\w\[\]\:\/\.\s]+|[\w]+ :: [\w]+ as [\w]+\.\s[<>\/\w\s:]+::end\./gi)
                   .forEach(function(iPar){
-                    var variable;
                     if(parseVariable(iPar).test){
-                      variable=parseVariable(iPar).variable;
-                      hvObj.data[variable]=parseVariable(iPar);
+                      var variable=parseVariable(iPar).variable;
+                      if(hvObj.data.hasOwnProperty(variable)){
+                        for(var key in parseVariable(iPar)){
+                          if(!hvObj.data[variable].hasOwnProperty(key)) hvObj.data[variable][key] = parseVariable(iPar)[key];
+                        }
+                      }
+                      else{
+                        hvObj.data[variable]=parseVariable(iPar);
+                      }
+                    }
+                    if(/[\w]+ :: [\w]+ as [\w]+\.\s[<>\/\w\s:]+::end\./.test(iPar)){
+                      var forEach = iPar.match(/^forEach :: ([\w]+) as ([\w]+)\.\s([<>\/\w\s:]+)::end\./);
+                      if(typeof hvObj.data[forEach[1]] !== "undefined"){
+                         var variable = hvObj.data[forEach[1]];
+                         variable.ajaxReq && reqAjax(variable,function(res,status){
+                           if(status === 'success'){
+                             var result = typeof variable.validate === "function" ? variable.validate(res) : res;
+                             result= typeof result === "object" ? result : JSON.parse(result);
+                             var reVar =forEach[2], getMatch = new RegExp("^::[\\w]+","g");
+                             var opt=forEach[3].match(getMatch);
+                             console.log(opt);
+                             isArray(result) && result.forEach(function(i){
+                               console.log(forEach[2]);
+                             });
+                           }
+                         });
+                      }
                     }
                   });
               });
         }
+        console.log(hvObj);
         typeof arg === "object" && this.setHvObj(arg);
         typeof hvObj.registerModule !== "undefined" && function(){
 
         }
-        if(hvObj.autoRender){
-          typeof hvObj.control != "undefined" && typeof hvObj.commandExclusive !== "undefined" && hvObj.commandExclusive && this.commandExclusive();
+        if(hvObj.autoRender && typeof hvObj.control != "undefined"){
+          typeof hvObj.commandExclusive !== "undefined" && hvObj.commandExclusive && this.commandExclusive();
         }
-        console.log(hvObj);
+        //console.log(hvObj);
     }
     hv.prototype.control = function (controller) {
         typeof controller === "string" && this.setHvObj({control:controller});
