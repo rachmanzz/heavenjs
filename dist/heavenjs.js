@@ -72,50 +72,53 @@
         };
 
         this.commandExclusive = function() {
-          // controller  selector
+            var expression = "<!--:";
+            expression+="[\\?\\{\\}\\(\\)\\[\\]\"`~:+@\\*\\$\\/\\.\\^\\,>%<=\\s\\t\\w\\-]+";
+            expression+=":-->";
+            // controller  selector
             var parentSelector = document.querySelector('[control="'+hvObj.control+'"]');
             // Check if raw Template is undefined & save html Template
             if(typeof rawTpl == 'undefined') rawTpl=parentSelector.innerHTML;
             //find match template of heavenJS command && process command
-            rawTpl.match(/<!--:[\[\]\:\@\/\.\,\>\<\=\s\t\w]+:-->/g)
-              .forEach(function(iHvCode){ // get global command
-                var rawCode =iHvCode.match(/<!--:([\[\]\:\@\/\.\,\>\<\=\s\t\w]+):-->/)[1]; // index paramenter
-                console.log("raw Code :" + rawCode);
-                rawCode.match(/\@[\w]+ :: [\w\[\]\:\/\.\s]+|[\w]+ :: [\w]+ as [\w]+\.\s[<>\/\w\s:]+::end\./gi)
-                  .forEach(function(iPar){
-                    if(parseVariable(iPar).test){
-                      var variable=parseVariable(iPar).variable;
-                      if(hvObj.data.hasOwnProperty(variable)){
-                        for(var key in parseVariable(iPar)){
-                          if(!hvObj.data[variable].hasOwnProperty(key)) hvObj.data[variable][key] = parseVariable(iPar)[key];
+            typeof rawTpl.match(new RegExp(expression,'g')) !== "null" &&
+              rawTpl.match(new RegExp(expression,'g')).forEach(function(so){
+                //so || source of heavenJS
+                var rawCode = so.match(/<!--:([\w\s\D]+):-->/)[1];
+                typeof rawCode !== "null" &&
+                  rawCode.match(/\@[\w]+ :: [\w\[\]\:\/\.\s]+|[\w]+ :: [\w]+ as [\w]+\.\s[\w\s\D]+::end\./g)
+                  .forEach(function(ix){
+                    // index of variable and other method
+                    if(parseVariable(ix).test){
+                      var getVar = parseVariable(ix);
+                      if(hvObj.data.hasOwnProperty(getVar.variable)){
+                        for(var key in getVar){
+                          if(!hvObj.data[getVar.variable].hasOwnProperty(key)) hvObj.data[getVar.variable][key] = getVar[key];
                         }
                       }
                       else{
-                        hvObj.data[variable]=parseVariable(iPar);
+                        hvObj.data[getVar.variable]=getVar;
                       }
                     }
-                    if(/[\w]+ :: [\w]+ as [\w]+\.\s[<>\/\w\s:]+::end\./.test(iPar)){
-                      var forEach = iPar.match(/^forEach :: ([\w]+) as ([\w]+)\.\s([<>\/\w\s:]+)::end\./);
-                      if(typeof hvObj.data[forEach[1]] !== "undefined"){
-                         var variable = hvObj.data[forEach[1]];
-                         variable.ajaxReq && reqAjax(variable,function(res,status){
-                           if(status === 'success'){
-                             var result = typeof variable.validate === "function" ? variable.validate(res) : res;
-                             result= typeof result === "object" ? result : JSON.parse(result);
-                             var reVar =forEach[2], getMatch = new RegExp("^::[\\w]+","g");
-                             var opt=forEach[3].match(getMatch);
-                             console.log(opt);
-                             isArray(result) && result.forEach(function(i){
-                               console.log(forEach[2]);
-                             });
-                           }
-                         });
+                    //
+                    if(/[\w]+ :: [\w]+ as [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
+                      var forEach= ix.match(/^forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
+                      if(typeof forEach !== "null" && hvObj.data.hasOwnProperty(forEach[1])){
+                        var v=hvObj.data[forEach[1]],asIs=forEach[2];
+                        if(v.ajaxReq){
+                          console.log("skip ajax");
+                        }
+                        else{
+                          console.log('prossess data');
+                        }
+
+                        //var html=rawTpl.replace(so,forEach[3]);
+                        //parentSelector.innerHTML =html;
+
                       }
                     }
                   });
               });
         }
-        console.log(hvObj);
         typeof arg === "object" && this.setHvObj(arg);
         typeof hvObj.registerModule !== "undefined" && function(){
 
@@ -123,7 +126,7 @@
         if(hvObj.autoRender && typeof hvObj.control != "undefined"){
           typeof hvObj.commandExclusive !== "undefined" && hvObj.commandExclusive && this.commandExclusive();
         }
-        //console.log(hvObj);
+        console.log(hvObj);
     }
     hv.prototype.control = function (controller) {
         typeof controller === "string" && this.setHvObj({control:controller});
