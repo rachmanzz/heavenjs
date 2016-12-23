@@ -40,8 +40,8 @@
                     url:Case[3]
                 }
             }else{
-              if(/\@([\w]+) :: ([\w\W\s]+)/.test(v)){
-                  Case=v.match(/\@([\w]+) :: ([\w\W\s]+)/);
+              if(/\@([\w]+) :: ([ \w]+)/.test(v)){
+                  Case=v.match(/\@([\w]+) :: ([ \w]+)/);
                   variable= {
                       test:true,
                       ajaxReq : false,
@@ -58,6 +58,14 @@
           }
           return obj;
         };
+        Object.prototype.getProp = function (str) {
+          var result=null;
+          if(!isArray(this) && typeof this === "object" && typeof str === "string"){
+            str = str.split('.');
+            while (str.length) result=this[str.shift()];
+          }
+          return result;
+        }
     var hv = function (arg) {
         var hvObj ={data:{},autoRender:true},rawTpl;
 
@@ -84,8 +92,9 @@
               rawTpl.match(new RegExp(expression,'g')).forEach(function(so){
                 //so || source of heavenJS
                 var rawCode = so.match(/<!--:([\w\s\D]+):-->/)[1];
+                var loop="";
                 typeof rawCode !== "null" &&
-                  rawCode.match(/\@[\w]+ :: [\w\[\]\:\/\.\s]+|[\w]+ :: [\w]+ as [\w]+\.\s[\w\s\D]+::end\./g)
+                  rawCode.match(/\@[\w]+ :: [\w\[\]\:\/\.\s]+|[~\w]+ :: [\w]+\.\s[\?\{\}\(\)\[\]"`:+@\*\$\/\.\^\,>%<=\s\w\-]+::end\.|[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\?\{\}\(\)\[\]"`:+@\*\$\/\.\^\,>%<=\s\w\-]+::end\./g)
                   .forEach(function(ix){
                     // index of variable and other method
                     if(parseVariable(ix).test){
@@ -99,24 +108,56 @@
                         hvObj.data[getVar.variable]=getVar;
                       }
                     }
-                    //
-                    if(/[\w]+ :: [\w]+ as [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
-                      var forEach= ix.match(/^forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
+
+                    if(/[\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
+                      var forEach= ix.match(/forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
                       if(typeof forEach !== "null" && hvObj.data.hasOwnProperty(forEach[1])){
                         var v=hvObj.data[forEach[1]],asIs=forEach[2];
                         if(v.ajaxReq){
                           console.log("skip ajax");
                         }
                         else{
-                          console.log('prossess data');
+                          typeof v.value === "object" && isArray(v.value)
+                          && v.value.forEach(function(v){
+                            var val =forEach[3];
+                            var pattern = '::'+asIs+'\\.([\\.a-zA-Z_]+)|::'+asIs;
+                            new RegExp(pattern).test && val.match(new RegExp(pattern,'g'))
+                              .forEach(function(i){
+                                var Res;
+                                if(/::[a-zA-Z_0-9]+\.[\.a-zA-Z_0-9]+/.test(i)) Res=v.getProp(i);
+                                else Res=v;
+                                val =val.replace(i,Res);
+                              });
+                              loop +=val;
+                          });
                         }
-
-                        //var html=rawTpl.replace(so,forEach[3]);
-                        //parentSelector.innerHTML =html;
-
                       }
                     }
+
+                    if(/^[~\w]+ :: [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
+                       var element= ix.match(/return :: element\.\s([\w\s\D]+)::end\./);
+                       var pattern="::([\\w]+)\\.([\\.\\w]+)|::([\\w]+)";
+                       var result="";
+                       element !== "null" && element[1].match(new RegExp(pattern,'g'))
+                        .forEach(function(v){
+                          if(/::([\w]+)\.([\.\w]+)/.test(v)){
+                            console.log("haha");
+                          }
+                          else{
+                            if(/::([\w]+)/.test(v)){
+                              var val = v.match(/::([\w]+)/)[1];
+                              if(val !== "null" && hvObj.data.hasOwnProperty(val)){
+                                val = hvObj.data[val].value;
+                                result = element[1].replace(v,val);
+                              }
+                            }
+                          }
+                        });
+                        loop += result;
+                     }
                   });
+                  var html=rawTpl.replace(so,loop);
+                  parentSelector.innerHTML =html;
               });
         }
         typeof arg === "object" && this.setHvObj(arg);
