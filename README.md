@@ -58,14 +58,15 @@ maybe write data take so long time and need some property to return of value. us
 
 example ::
 
-  var hv = new heavenJS({
-      control : "webApp",
-      vData :{
-        a:['daihatsu','inova','lamborgini'],
-        buyOn:"2011"
-      },
-      commandExclusive:true
-  });
+
+    var hv = new heavenJS({
+        control : "webApp",
+        vData :{
+          a:['daihatsu','inova','lamborgini'],
+          buyOn:"2011"
+        },
+        commandExclusive:true
+    });
 
 
 data and vData is not equal. data return some property but vData return of value of data.
