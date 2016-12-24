@@ -20,7 +20,7 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
               <div bind="data">
                 <!--:
                   return :: element.
-                   <p>inova is buying on ::b.carBuyOn</p>
+                   <p>inova is buying on ::buyOn</p>
                   ::end.
                 :-->
               </div>
@@ -37,10 +37,8 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
           a:{
             value: ['daihatsu','inova','lamborgini']
           },
-          b:{
-            value:{
-              carBuyOn: "2001"
-            }
+          buyOn:{
+            value:"2011"
           }
         },
         commandExclusive:true
@@ -48,10 +46,8 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
 
     function clickMe(){
       // set new data
-        hv.data('b',{
-          value:{
-            carBuyOn: "2005"
-          }
+        hv.data('buyOn',{
+          value:"2015"
           });
       hv.render('div[bind="data"]');
     }
