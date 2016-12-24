@@ -74,23 +74,32 @@
         this.setHvObj = function (obj) {
             hvObj=mergerObj(hvObj,obj);
         };
+        this.setHvData=function(key,data){
+          hvObj.data[key] =data;
+        }
         //
         this.getHvObj = function(){
           return hvObj;
         };
+        this.getRawTpl = function(){
+          return rawTpl;
+        }
 
-        this.commandExclusive = function() {
+        this.commandExclusive = function(selector,getTpl) {
             var expression = "<!--:";
             expression+="[\\?\\{\\}\\(\\)\\[\\]\"`~:+@\\*\\$\\/\\.\\^\\,>%<=\\s\\t\\w\\-]+";
             expression+=":-->";
             // controller  selector
             var parentSelector = document.querySelector('[control="'+hvObj.control+'"]');
             // Check if raw Template is undefined & save html Template
+            if(typeof getTpl !== "undefined") parentSelector = parentSelector.querySelector(selector)
             if(typeof rawTpl == 'undefined') rawTpl=parentSelector.innerHTML;
             //find match template of heavenJS command && process command
-            typeof rawTpl.match(new RegExp(expression,'g')) !== "null" &&
-              rawTpl.match(new RegExp(expression,'g')).forEach(function(so){
+            var html=typeof getTpl !== "undefined" ? getTpl : rawTpl;
+            typeof html.match(new RegExp(expression,'g')) !== "null" &&
+              html.match(new RegExp(expression,'g')).forEach(function(so){
                 //so || source of heavenJS
+
                 var rawCode = so.match(/<!--:([\w\s\D]+):-->/)[1];
                 var loop="";
                 typeof rawCode !== "null" &&
@@ -108,40 +117,43 @@
                         hvObj.data[getVar.variable]=getVar;
                       }
                     }
-
                     if(/[\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
+
+                      // render forEach function
                       var forEach= ix.match(/forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
                       if(typeof forEach !== "null" && hvObj.data.hasOwnProperty(forEach[1])){
                         var v=hvObj.data[forEach[1]],asIs=forEach[2];
-                        if(v.ajaxReq){
-                          console.log("skip ajax");
-                        }
-                        else{
-                          typeof v.value === "object" && isArray(v.value)
-                          && v.value.forEach(function(v){
-                            var val =forEach[3];
-                            var pattern = '::'+asIs+'\\.([\\.a-zA-Z_]+)|::'+asIs;
-                            new RegExp(pattern).test && val.match(new RegExp(pattern,'g'))
-                              .forEach(function(i){
-                                var Res;
-                                if(/::[a-zA-Z_0-9]+\.[\.a-zA-Z_0-9]+/.test(i)) Res=v.getProp(i);
-                                else Res=v;
-                                val =val.replace(i,Res);
-                              });
-                              loop +=val;
-                          });
+                        if(!v.ajaxReq){
+                            typeof v.value === "object" && isArray(v.value)
+                            && v.value.forEach(function(v){
+                              var val =forEach[3];
+                              var pattern = '::'+asIs+'\\.([\\.a-zA-Z_]+)|::'+asIs;
+                              new RegExp(pattern).test && val.match(new RegExp(pattern,'g'))
+                                .forEach(function(i){
+                                  var Res;
+                                  if(/::[a-zA-Z_0-9]+\.[\.a-zA-Z_0-9]+/.test(i)) Res=v.getProp(i);
+                                  else Res=v;
+                                  val =val.replace(i,Res);
+                                });
+                                loop +=val;
+                            });
                         }
                       }
                     }
 
                     if(/^[~\w]+ :: [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
+                      // html element render
                        var element= ix.match(/return :: element\.\s([\w\s\D]+)::end\./);
                        var pattern="::([\\w]+)\\.([\\.\\w]+)|::([\\w]+)";
                        var result="";
                        element !== "null" && element[1].match(new RegExp(pattern,'g'))
                         .forEach(function(v){
-                          if(/::([\w]+)\.([\.\w]+)/.test(v)){
-                            console.log("haha");
+                          if(/::[\w]+\.[\.\w]+/.test(v)){
+                            var val = v.match(/::([\w]+)\.([\.\w]+)/);
+                            if(hvObj.data.hasOwnProperty(val[1])){
+                              val = hvObj.data[val[1]].value.getProp(val[2]);
+                              result = element[1].replace(v,val);
+                            }
                           }
                           else{
                             if(/::([\w]+)/.test(v)){
@@ -156,7 +168,7 @@
                         loop += result;
                      }
                   });
-                  var html=rawTpl.replace(so,loop);
+                  html=html.replace(so,loop);
                   parentSelector.innerHTML =html;
               });
         }
@@ -167,11 +179,25 @@
         if(hvObj.autoRender && typeof hvObj.control != "undefined"){
           typeof hvObj.commandExclusive !== "undefined" && hvObj.commandExclusive && this.commandExclusive();
         }
-        console.log(hvObj);
     }
     hv.prototype.control = function (controller) {
         typeof controller === "string" && this.setHvObj({control:controller});
         return this;
+    }
+    hv.prototype.data= function(key,obj){
+      typeof key === "string" && typeof obj === "object"
+        && !isArray(obj) && this.setHvData(key,obj);
+    }
+    hv.prototype.render=function(selector){
+      var parser = new DOMParser,
+      rawTpl = this.getRawTpl(),
+      doc    = parser.parseFromString(rawTpl, "text/html");
+      if(typeof selector !== "undefined"){
+        var element  = doc.querySelector(selector);
+        this.commandExclusive(selector,element.innerHTML);
+      }
+
+      //console.log(this.getHvObj());
     }
     GLOBAL.heavenJS=hv;
 });
