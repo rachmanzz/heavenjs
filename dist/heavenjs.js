@@ -118,7 +118,6 @@
                       }
                     }
                     if(/[\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
-
                       // render forEach function
                       var forEach= ix.match(/forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
                       if(typeof forEach !== "null" && hvObj.data.hasOwnProperty(forEach[1])){
@@ -145,14 +144,14 @@
                       // html element render
                        var element= ix.match(/return :: element\.\s([\w\s\D]+)::end\./);
                        var pattern="::([\\w]+)\\.([\\.\\w]+)|::([\\w]+)";
-                       var result="";
+                       var result=element[1];
                        element !== "null" && element[1].match(new RegExp(pattern,'g'))
                         .forEach(function(v){
                           if(/::[\w]+\.[\.\w]+/.test(v)){
                             var val = v.match(/::([\w]+)\.([\.\w]+)/);
                             if(hvObj.data.hasOwnProperty(val[1])){
                               val = hvObj.data[val[1]].value.getProp(val[2]);
-                              result = element[1].replace(v,val);
+                              result = result.replace(v,val);
                             }
                           }
                           else{
@@ -160,7 +159,7 @@
                               var val = v.match(/::([\w]+)/)[1];
                               if(val !== "null" && hvObj.data.hasOwnProperty(val)){
                                 val = hvObj.data[val].value;
-                                result = element[1].replace(v,val);
+                                result = result.replace(v,val);
                               }
                             }
                           }
@@ -196,8 +195,6 @@
         var element  = doc.querySelector(selector);
         this.commandExclusive(selector,element.innerHTML);
       }
-
-      //console.log(this.getHvObj());
     }
     GLOBAL.heavenJS=hv;
 });
