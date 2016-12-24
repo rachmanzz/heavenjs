@@ -20,7 +20,7 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
               <div bind="data">
                 <!--:
                   return :: element.
-                   <p>::b.carName is buying on ::b.carBuyOn</p>
+                   <p>inova is buying on ::b.carBuyOn</p>
                   ::end.
                 :-->
               </div>
@@ -39,8 +39,7 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
           },
           b:{
             value:{
-              carName : "daihatsu",
-              carBuyOn" "2001"
+              carBuyOn: "2001"
             }
           }
         },
@@ -51,8 +50,7 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
       // set new data
         hv.data('b',{
           value:{
-            carName : "inova",
-            carBuyOn" "2005"
+            carBuyOn: "2005"
           }
           });
       hv.render('div[bind="data"]');
