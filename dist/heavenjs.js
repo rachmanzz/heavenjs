@@ -172,6 +172,15 @@
               });
         }
         typeof arg === "object" && this.setHvObj(arg);
+        if(typeof arg.vData === "object"){
+          for(var key in arg.vData){
+            if(typeof arg.vData[key] !== "function"){
+                var obj=hvObj.data[key] = new Object();
+                obj.value = arg.vData[key];
+            }
+          }
+          delete hvObj.vData;
+        }
         typeof hvObj.registerModule !== "undefined" && function(){
 
         }
@@ -189,10 +198,10 @@
     }
     hv.prototype.render=function(selector){
       var parser = new DOMParser,
-      rawTpl = this.getRawTpl(),
-      doc    = parser.parseFromString(rawTpl, "text/html");
+      rawTpl = this.getRawTpl();
       if(typeof selector !== "undefined"){
-        var element  = doc.querySelector(selector);
+        var documents    = parser.parseFromString(rawTpl, "text/html");
+        var element  = documents.querySelector(selector);
         this.commandExclusive(selector,element.innerHTML);
       }
     }

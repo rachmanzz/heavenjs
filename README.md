@@ -51,3 +51,21 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
           });
       hv.render('div[bind="data"]');
     }
+
+#### heavenJS vData as value of Data
+
+maybe write data take so long time and need some property to return of value. using vData, you don't need property value again.
+
+example ::
+
+  var hv = new heavenJS({
+      control : "webApp",
+      vData :{
+        a:['daihatsu','inova','lamborgini'],
+        buyOn:"2011"
+      },
+      commandExclusive:true
+  });
+
+
+data and vData is not equal. data return some property but vData return of value of data.
