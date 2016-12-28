@@ -1,209 +1,260 @@
-(function (GLOBAL,mainjs) {
-    typeof GLOBAL !== "undefined" ? mainjs(GLOBAL) :
-        console.log('heavenJS just support a browser');
-})(this,function (GLOBAL) {
-    "use strict";
-    //check is object & not array
-    var isObject=function (val) {
-        return !Array.isArray(val) ? typeof val === "object" : false;
-        }
-        ,
+(function(GLOBAL,main){
+  typeof GLOBAL !== "undefined" ? main(GLOBAL) :
+      console.log('heavenJS just support a browser');
+})(this,function(__GLOBAL){
+  "use strict";
 
-        // check is array
-        isArray=function (val) {
-            return Array.isArray(val);
-        }
-        ,
-        // ajax request
-        reqAjax = function (obj,arg) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.open(obj.method.toUpperCase(),obj.url, typeof obj.async !== "undefined" ? obj.async : true);
-            typeof obj.type !== "undefined" && xhttp.setRequestHeader("Content-type", obj.type);
-            xhttp.onreadystatechange = function () {
-                if(this.readyState == 4 && this.status == 200)
-                    arg(this.responseText,'success');
-                if(this.status != 200)
-                    arg(this.status,'error');
-            };
-            typeof obj.send != "undefined" ? xhttp.send(obj.send) : xhttp.send();
-        },
-        parseVariable = function (v) {
-            var Case,variable={test:false};
+  // check is object & not array
+  var isObject=function(v){
+        return !Array.isArray(v) ? typeof v === "object" : false;
+      },
+      isUndef =function(v){
+        return typeof v === "undefined";
+      },
+      isNull = function(v){
+        return typeof v === "null";
+      },
+      // chek is array
+      isArray =function(v){
+        return Array.isArray(v);
+      },
+      // requestAjax
+      reqAjax =function(obj,res){
+        var xhttp = new XMLHttpRequest();
 
-            if(/\@[\w]+ :: \[[A-Z]+\] [\w\.\/:]+/.test(v)){
-                Case=v.match(/\@([\w]+) :: \[([A-Z]+)\] ([\w\.\/:]+)/);
-                variable= {
-                    test:true,
-                    ajaxReq : true,
-                    variable : Case[1],
-                    method:Case[2],
-                    url:Case[3]
-                }
-            }else{
-              if(/\@([\w]+) :: ([ \w]+)/.test(v)){
-                  Case=v.match(/\@([\w]+) :: ([ \w]+)/);
-                  variable= {
-                      test:true,
-                      ajaxReq : false,
-                      variable : Case[1],
-                      value:Case[2]
+            xhttp.open(obj.method.toUpperCase(),
+                       obj.url, typeof obj.async !== "undefined" ?
+                       obj.async : true);
+            typeof obj.requestHeader !== "undefined" &&
+                       obj.requestHeader === "function" &&
+                       obj.requestHeader(xhttp);
+            xhttp.onreadystatechange = function(){
+                          if(this.readyState == 4 && this.status == 200)
+                              res(this.responseText,'success');
+                          if(this.status !== 200)
+                              res(this.status,'error');
+                        };
+            typeof obj.send !== "undefined" ? xhttp.send(obj.send) :
+                          xhttp.send();
+      },
+      // merger Object
+      mObject = function(obj,obj1){
+                    for(var key in obj){
+                      if(obj1.hasOwnProperty(key) &&
+                              isObject(obj[key]) && isObject(obj1[key]))
+                                  mObject(obj[key],obj1[key]);
+                      else obj1[key] = obj[key];
+                    }
+                    return obj1;
+                },
+      // data parsing
+      parseData = function(v){
+                  var data={test:false,val:{}};
+                  if(/\@[\w]+ :: \[[A-Z]+\] [\w\D]+/.test(v)){
+                    v=v.match(/\@([\w]+) :: \[([A-Z]+)\] ([\w\D]+)/);
+                    data.test = true;
+                    data.val.request=new Object;
+                    data.val.request[v[1]]  = {
+                                                url : v[3],
+                                                method: v[2]
+                                              }
                   }
-            }
-            }
-            return variable;
-        },
-        mergerObj=function(obj,newObj){
-          for(var key in newObj){
-            if (newObj.hasOwnProperty(key)) obj[key] = newObj[key];
-          }
-          return obj;
-        };
-        Object.prototype.getProp = function (str) {
-          var result=null;
-          if(!isArray(this) && typeof this === "object" && typeof str === "string"){
-            str = str.split('.');
-            while (str.length) result=this[str.shift()];
-          }
-          return result;
-        }
-    var hv = function (arg) {
-        var hvObj ={data:{},autoRender:true},rawTpl;
-
-
-        //set Global heavenJS object
-        this.setHvObj = function (obj) {
-            hvObj=mergerObj(hvObj,obj);
-        };
-        this.setHvData=function(key,data){
-          hvObj.data[key] =data;
-        }
-        //
-        this.getHvObj = function(){
-          return hvObj;
-        };
-        this.getRawTpl = function(){
-          return rawTpl;
-        }
-
-        this.commandExclusive = function(selector,getTpl) {
-            var expression = "<!--:";
-            expression+="[\\?\\{\\}\\(\\)\\[\\]\"`~:+@\\*\\$\\/\\.\\^\\,>%<=\\s\\t\\w\\-]+";
-            expression+=":-->";
-            // controller  selector
-            var parentSelector = document.querySelector('[control="'+hvObj.control+'"]');
-            // Check if raw Template is undefined & save html Template
-            if(typeof getTpl !== "undefined") parentSelector = parentSelector.querySelector(selector)
-            if(typeof rawTpl == 'undefined') rawTpl=parentSelector.innerHTML;
-            //find match template of heavenJS command && process command
-            var html=typeof getTpl !== "undefined" ? getTpl : rawTpl;
-            typeof html.match(new RegExp(expression,'g')) !== "null" &&
-              html.match(new RegExp(expression,'g')).forEach(function(so){
-                //so || source of heavenJS
-
-                var rawCode = so.match(/<!--:([\w\s\D]+):-->/)[1];
-                var loop="";
-                typeof rawCode !== "null" &&
-                  rawCode.match(/\@[\w]+ :: [\w\[\]\:\/\.\s]+|[~\w]+ :: [\w]+\.\s[\?\{\}\(\)\[\]"`:+@\*\$\/\.\^\,>%<=\s\w\-]+::end\.|[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\?\{\}\(\)\[\]"`:+@\*\$\/\.\^\,>%<=\s\w\-]+::end\./g)
-                  .forEach(function(ix){
-                    // index of variable and other method
-                    if(parseVariable(ix).test){
-                      var getVar = parseVariable(ix);
-                      if(hvObj.data.hasOwnProperty(getVar.variable)){
-                        for(var key in getVar){
-                          if(!hvObj.data[getVar.variable].hasOwnProperty(key)) hvObj.data[getVar.variable][key] = getVar[key];
-                        }
-                      }
-                      else{
-                        hvObj.data[getVar.variable]=getVar;
-                      }
+                  if(/\@([\w]+) :: ([ \w]+)/.test(v)){
+                      v=v.match(/\@([\w]+) :: ([ \w]+)/);
+                      data.test = true;
+                      data.val.data=new Object;
+                      data.val.data[v[1]]  = v[2];
+                  }
+                  return data;
+                },
+        rExp    = {
+                    set : function(v){
+                      this.Exp  = v;
+                      return this;
+                    },
+                    raw:function(){
+                      var Exp = this.Exp;
+                      return new RegExp(Exp);
+                    },
+                    get : function(d,f){
+                      var Exp = this.Exp;
+                      if(!isUndef(f)) Exp = new RegExp(Exp,f);
+                      else Exp = new RegExp(Exp);
+                      return d.match(Exp);
                     }
-                    if(/[\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
-                      // render forEach function
-                      var forEach= ix.match(/forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
-                      if(typeof forEach !== "null" && hvObj.data.hasOwnProperty(forEach[1])){
-                        var v=hvObj.data[forEach[1]],asIs=forEach[2];
-                        if(!v.ajaxReq){
-                            typeof v.value === "object" && isArray(v.value)
-                            && v.value.forEach(function(v){
-                              var val =forEach[3];
-                              var pattern = '::'+asIs+'\\.([\\.a-zA-Z_]+)|::'+asIs;
-                              new RegExp(pattern).test && val.match(new RegExp(pattern,'g'))
-                                .forEach(function(i){
-                                  var Res;
-                                  if(/::[a-zA-Z_0-9]+\.[\.a-zA-Z_0-9]+/.test(i)) Res=v.getProp(i);
-                                  else Res=v;
-                                  val =val.replace(i,Res);
-                                });
-                                loop +=val;
-                            });
-                        }
-                      }
-                    }
+                  };
+      Object.prototype.getProp = function (str) {
+                  var result=null;
+                  if(isObject(this) && typeof str === "string"){
+                    str = str.split('.');
+                    while (str.length) result=this[str.shift()];
+                  }
+                  return result;
+                }
+  // heavenJS instance
+  var hv = function(inst){
+            var hvStorage = {data:{},autoRender:true,commandExclusive:true},
+                rawTpl;
+            // set heavenjs data
+            this.setHvStorage = function(data){
+                  hvStorage = mObject(data,hvStorage);
+                 }
+            this.getHvStorage = function(){
+                  return hvStorage;
+                 }
+            this.setHvData = function(key,data){
+                  hvStorage.data[key] =data;
+                 }
+            // set Raw Templates
+            this.setRawTpl = function(tpl){
+                  rawTpl = tpl;
+                 }
+            this.getRawTpl = function(){
+                  return rawTpl;
+                 }
+            this.commandExclusive = function(selector,tpl){
+                    var exp = "<!--:";
+                        exp+="[\\?\\{\\}\\(\\)\\[\\]\"`~:+@\\*\\$\\/\\.\\^\\,>%<=\\s\\t\\w\\-]+";
+                        exp+=":-->";
 
-                    if(/^[~\w]+ :: [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
-                      // html element render
-                       var element= ix.match(/return :: element\.\s([\w\s\D]+)::end\./);
-                       var pattern="::([\\w]+)\\.([\\.\\w]+)|::([\\w]+)";
-                       var result=element[1];
-                       element !== "null" && element[1].match(new RegExp(pattern,'g'))
-                        .forEach(function(v){
-                          if(/::[\w]+\.[\.\w]+/.test(v)){
-                            var val = v.match(/::([\w]+)\.([\.\w]+)/);
-                            if(hvObj.data.hasOwnProperty(val[1])){
-                              val = hvObj.data[val[1]].value.getProp(val[2]);
-                              result = result.replace(v,val);
-                            }
-                          }
-                          else{
-                            if(/::([\w]+)/.test(v)){
-                              var val = v.match(/::([\w]+)/)[1];
-                              if(val !== "null" && hvObj.data.hasOwnProperty(val)){
-                                val = hvObj.data[val].value;
-                                result = result.replace(v,val);
+                    // get Controller
+                    var control = document.querySelector('[control="'+hvStorage.control+'"]');
+                    // chek and set template
+                    if(isUndef(rawTpl)) rawTpl=control.innerHTML;
+                    //chek and set selected template
+                    if(!isUndef(tpl)) control = control.querySelector(selector);
+                    // html template will be renders
+                    var rawHTML = !isUndef(tpl) ? tpl : rawTpl;
+                    new RegExp(exp).test(rawHTML) &&
+                        rawHTML.match(new RegExp(exp,"g")).forEach(function(so){
+                          var rawCode = so.match(/<!--:([\w\s\D]+):-->/)[1];
+                          //chek it again -- dev
+                          var loop="";
+                          !isNull(rawCode) && rawCode
+                            .match(/\@[\w]+ :: [ \w\[\]\:\/\.\?=]+|[~\w]+ :: [\w]+\.\s[\?\{\}\(\)\[\]"`:+@\*\$\/\.\^\,>%<=\s\w\-]+::end\.|[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\?\{\}\(\)\[\]"`:+@\*\$\/\.\^\,>%<=\s\w\-]+::end\./g)
+                            .forEach(function(ix){
+                              if(parseData(ix).test) mObject(parseData(ix).val,hvStorage);
+                              // parsing forEach and other function
+                              if(/^[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\w\s\D]+::end\./.test(ix)){
+                                // forEach
+                                var fE= ix.match(/forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
+                                    if(!isNull(fE)){
+                                      // chek request ajax
+                                      var vO,asIs=fE[2], eL = fE[3];;
+                                      if(hvStorage.request.hasOwnProperty(fE[1])){
+                                        vO = hvStorage.request[fE[1]];
+                                      }
+
+                                      else if(hvStorage.data.hasOwnProperty(fE[1])){
+                                        // vO value array return
+                                        vO = hvStorage.data[fE[1]];
+                                        isArray(vO) && vO.forEach(function(v){
+                                          // v is vO loop
+                                          var nEl=eL;
+                                          /::[\w]+\.[\.\w]+|::[\w]+/.test(eL) && eL
+                                          .match(/::[\w]+\.[\.\w]+|::[\w]+/g).forEach(function(vE){
+                                            //ve is element variable return
+                                            var vOe;
+                                            if(/::[\w]+\.[\.\w]+/.test(vE)){
+                                              vOe = vE.match(/::([\w]+)\.([\.\w]+)/);
+                                              if(asIs === vOe[1]) vOe = v.getProp(vOe[2]);
+                                              else if(hvStorage.data.hasOwnProperty(vOe[1])) vOe= hvStorage.data[vOe[1]].getProp(vOe[2]);
+                                            }
+                                            else {
+                                              vOe = vE.match(/::([\w]+)/)[1];
+                                              if(asIs === vOe) vOe = v;
+                                              else if(hvStorage.data.hasOwnProperty(vOe)) vOe = hvStorage.data[vOe]
+                                            };
+                                            nEl= nEl.replace(vE,vOe);
+                                          });
+                                          loop += nEl;
+                                        });
+                                      }
+
+                                    }
+                                    //end of forEach
                               }
-                            }
-                          }
+
+                              //html element parsing
+                              if(/^[~\w]+ :: [\w]+\.\s[\w\s\D]+\s::end\.$/.test(ix)){
+                                // html element renders
+                                var eL  = ix.match(/return :: element\.\s([\w\s\D]+)::end\./),
+                                    patt= rExp.set("::([\\w]+)\\.([\\.\\w]+)|::([\\w]+)"),
+                                    hasRequest=false,
+                                    nEl=eL[1];
+                                    !isNull(eL) && patt.get(eL[1],'g').forEach(function(v){
+                                      var vI= rExp.set(/::([\w]+)/).get(v)[1],vO;
+                                      if(hvStorage.request.hasOwnProperty(vI)){
+                                        hasRequest=true;
+                                      }
+                                      else if(hvStorage.data.hasOwnProperty(vI)){
+                                        if(/::[\w]+\.[\.\w]+/.test(v)){
+                                          vO = v.match(/::[\w]+\.([\.\w]+)/);
+                                          vO = hvStorage.data[vI].getProp(vO[1]);
+                                        }else vO=hvStorage.data[vI];
+                                        nEl = nEl.replace(v,vO);
+                                      }
+                                    });
+                                    loop += nEl;
+                              }
+                            });
+                            rawHTML = rawHTML.replace(so,loop);
+                            control.innerHTML = rawHTML;
                         });
-                        loop += result;
-                     }
-                  });
-                  html=html.replace(so,loop);
-                  parentSelector.innerHTML =html;
-              });
-        }
-        typeof arg === "object" && this.setHvObj(arg);
-        if(typeof arg.vData === "object"){
-          for(var key in arg.vData){
-            if(typeof arg.vData[key] !== "function"){
-                var obj=hvObj.data[key] = new Object();
-                obj.value = arg.vData[key];
+                 }
+            if(isObject(inst.vData)) mObject(inst.vData,hvStorage) && delete inst.vData;
+            if(isObject(inst)) this.setHvStorage(inst);
+            // empty space, maybe for installation modules
+            //check autoRender & control
+            if(hvStorage.autoRender && !isUndef(hvStorage.control)){
+              //rendering here
+              hvStorage.commandExclusive && this.commandExclusive();
             }
           }
-          delete hvObj.vData;
-        }
-        typeof hvObj.registerModule !== "undefined" && function(){
+          hv.prototype.control = function (cont) {
+              typeof cont === "string" && this.setHvStorage({control:cont});
+              return this;
+          }
+          hv.prototype.data= function(key,arg){
+            typeof key === "string" && this.setHvData(key,obj);
+          }
+          hv.prototype.request=function(arg,render){
+            var self    = this;
+            var req     = rExp.set(/^([\w]+) applyTo ([\w]+)/);
+            var storage = this.getHvStorage(),
+            renderTpl = this.render,
+            hvData      =this.setHvData;
+            if(req.raw().test(arg)){
+              var vO = req.get(arg);
+              if(!isUndef(storage.request[vO[1]])){
+                reqAjax(storage.request[vO[1]],function(res,status){
+                  if(status == "success"){
+                    var data = isObject(res) ? res : JSON.parse(res);
+                    hvData(vO[2],data);
+                    if(!isUndef(render) && typeof render === "string"){
+                      if(/^render\([\w\W]+\)/.test(render)){
+                        render = render.match(/^render\(([\w\W]+)\)/)[1];
+                        renderTpl(render,self);
+                      }
+                      else if(/^[\w]+/.test(render))
+                        renderTpl('[stage="'+render+'"',self);
+                    }
+                  }
+                });
+              }
+            }
+          };
+          hv.prototype.render =function(selector,self){
+            var parser = new DOMParser,
+            self = isUndef(self) ? this : self,
+            rawTpl = isUndef(self.getRawTpl()) ?
+              document.querySelector('[control="'+self.getHvStorage().control+'"]') :
+              self.getRawTpl();
+            var documents    = parser.parseFromString(rawTpl, "text/html");
+            var element  = documents.querySelector(selector);
+            if(typeof selector !== "undefined") self.commandExclusive(selector,element.innerHTML);
+            else self.commandExclusive();
+          }
 
-        }
-        if(hvObj.autoRender && typeof hvObj.control != "undefined"){
-          typeof hvObj.commandExclusive !== "undefined" && hvObj.commandExclusive && this.commandExclusive();
-        }
-    }
-    hv.prototype.control = function (controller) {
-        typeof controller === "string" && this.setHvObj({control:controller});
-        return this;
-    }
-    hv.prototype.data= function(key,obj){
-      typeof key === "string" && typeof obj === "object"
-        && !isArray(obj) && this.setHvData(key,obj);
-    }
-    hv.prototype.render=function(selector){
-      var parser = new DOMParser,
-      rawTpl = this.getRawTpl();
-      if(typeof selector !== "undefined"){
-        var documents    = parser.parseFromString(rawTpl, "text/html");
-        var element  = documents.querySelector(selector);
-        this.commandExclusive(selector,element.innerHTML);
-      }
-    }
-    GLOBAL.heavenJS=hv;
+  __GLOBAL.heavenJS = hv;
 });
