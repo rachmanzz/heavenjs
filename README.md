@@ -40,7 +40,7 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
         },
         commandExclusive:true
     });
-    data now not storing in object again..
+    // data now not storing in object again..
 
     function clickMe(){
       // set new data
