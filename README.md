@@ -44,9 +44,7 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
 
     function clickMe(){
       // set new data
-        hv.data('buyOn',{
-          value:"2015"
-          });
+        hv.data('buyOn',"2005");
       hv.render('div[bind="data"]');
     }
 
