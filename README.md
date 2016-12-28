@@ -10,9 +10,10 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
     <div control="webApp">
         <div>
             <div>
-              <select>
+              <select stage="cars">
                 <!--:
-                forEach :: a as cars.
+                @newcars :: [GET] http://url.com/
+                ~forEach :: a as cars.
                   <option value="::cars">::cars</option>
                 ::end.
                 :-->
@@ -34,15 +35,12 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
     var hv = new heavenJS({
         control : "webApp",
         data:{
-          a:{
-            value: ['daihatsu','inova','lamborgini']
-          },
-          buyOn:{
-            value:"2011"
-          }
+          a:["inova","Jazz"],
+          buyOn:"1991"
         },
         commandExclusive:true
     });
+    data now not storing in object again..
 
     function clickMe(){
       // set new data
@@ -52,21 +50,7 @@ heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS 
       hv.render('div[bind="data"]');
     }
 
-#### heavenJS vData as value of Data
+### ajax request
+heavenJS include simple ajax request
 
-maybe write data take so long time and need some property to return of value. using vData, you don't need property value again.
-
-example ::
-
-
-    var hv = new heavenJS({
-        control : "webApp",
-        vData :{
-          a:['daihatsu','inova','lamborgini'],
-          buyOn:"2011"
-        },
-        commandExclusive:true
-    });
-
-
-data and vData is not equal. data return some property but vData return of value of data.
+    hv.request('newcars applyTo a','cars');
