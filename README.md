@@ -4,7 +4,10 @@
 
 ### heavenJS code style
 heavenJS not using jQuery again. now heavenJS is standalone use ES5,.. heavenJS have new style code, that make page not leaving a pattern again.
-
+### new release
+    - heavenjs.beta.js
+     + work with other framework
+     + @ change to # 
 ### heavenJS innerHTML
 
     <div control="webApp">
