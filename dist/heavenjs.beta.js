@@ -130,10 +130,11 @@
                 exp+= ':-->';
             var re  =new rExp(exp);
             if(re.raw().test(rawHTML)){
-                var expCode =new rExp(/<!--:([\w\s\D]+):-->/),
-                    loop="";
+                var expCode =new rExp(/<!--:([\w\s\D]+):-->/);
+
 
                 re.get(rawHTML,'g').forEach(function (so) {
+                    var loop="";
                     if(expCode.raw().test(so)){
                         var rawCode = expCode.get(so)[1];
                         var vOb     = new rExp(storage.symbolMapper.at+"([\\w]+) :: ([\\w ]+)");
