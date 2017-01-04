@@ -300,7 +300,7 @@
     heavenJS.prototype.data= function(key,arg){
         typeof key === "string" && this.setData(key,arg);
     };
-    heavenJS.prototype.request=function(arg,render){
+    heavenJS.prototype.request=function(arg,render,error){
         var self    = this;
         var req     = new rExp(/^([\w]+) applyTo ([\w]+)$|^([\w]+)$/);
         var storage = this.getStorage(),
@@ -336,7 +336,7 @@
                                         var nData={};
                                         if(isUndef(this.nData)){
                                             for(var key in this){
-                                                if(key !== 'eRender' || key !==nData) nData[key] = this[key];
+                                                if(key !== 'eRender' || key !== 'nData') nData[key] = this[key];
                                             }
                                             setData(vO[2],mObject(nData,data));
                                         }
@@ -349,6 +349,9 @@
                                 rendering(render);
                             }
                         }
+                    }
+                    else{
+                        !isUndef(error) && typeof error === "function" && error(res,status);
                     }
                 });
             }
