@@ -3,6 +3,7 @@
         console.log('heavenJS just support a browser');
     
 })(typeof window !== "undefined" ? window : this, function (__GLOBAL) {
+    var ajaxHeader;
     var isObject=function(v){
             return !Array.isArray(v) ? typeof v === "object" : false;
         },
@@ -23,9 +24,12 @@
             xhttp.open(obj.method.toUpperCase(),
                 obj.url, typeof obj.async !== "undefined" ?
                     obj.async : true);
-            typeof obj.requestHeader !== "undefined" &&
-            obj.requestHeader === "function" &&
-            obj.requestHeader(xhttp);
+            if(!isUndef(ajaxHeader)){
+                ajaxHeader(xhttp);
+            }
+            if(!isUndef(obj.requestHeader)){
+                obj.requestHeader(xhttp);
+            }
             xhttp.onreadystatechange = function(){
                 if(this.readyState == 4 && this.status == 200)
                     res(this.responseText,'success');
@@ -45,29 +49,30 @@
             }
             return obj1;
         },
+        each = function (l,call) {
+            var i=0;
+            for(i; i < l.length; ++i){
+                call(i,l[i]);
+            }
+        },
     // data parsing
-        parseData = function(v){
-            var data={test:false,val:{}};
-            if(/[\w]+ :: \[[A-Z]+\] [\w\D]+/.test(v)){
-                v=v.match(/\@([\w]+) :: \[([A-Z]+)\] ([\w\D]+)/);
-                data.test = true;
-                data.val.request=new Object;
-                data.val.request[v[1]]  = {
-                    url : v[3],
-                    method: v[2]
-                }
+        parentAttr =function (selector,callback) {
+            if(selector.parentNode.getAttribute('stage') == null){
+                console.log("is here");
+                parentAttr(selector.parentNode,parent);
             }
-            if(/([\w]+) :: ([ \w]+)/.test(v)){
-                v=v.match(/\@([\w]+) :: ([ \w]+)/);
-                data.test = true;
-                data.val.data=new Object;
-                data.val.data[v[1]]  = v[2];
+            else {
+                callback(selector.parentNode);
             }
-            return data;
         },
 
         rExp    = function(v){
             this.Exp  = v;
+            return this;
+        },
+        gForm   = function (f) {
+            this.form = f;
+            this.setValidate={};
             return this;
         };
             rExp.prototype={
@@ -82,20 +87,67 @@
                     return d.match(Exp);
                 }
             };
-    Object.prototype.getProp = function (str) {
-        var result=null;
-        if(isObject(this) && typeof str === "string"){
-            str = str.split('.');
-            while (str.length) result=this[str.shift()];
-        }
-        return result;
-    };
+            gForm.prototype = {
+                attr:function (att) {
+                    return this.form.getAttribute(att);
+                },
+                tObject: function () {
+                    var val={},validate={},hasValidation=function (res) {
+                        var result = false;
+                        if(res.hasAttribute('h:validate') || res.hasAttribute('h:vld')) result = true;
+                        return result;
+                    },getValidation=function (res) {
+                            var result;
+                            if(res.hasAttribute('h:validate')) result = res.getAttribute('h:validate');
+                            else if(res.hasAttribute('h:vld')) result = res.getAttribute('h:vld');
+                            return result;
+                     };
+                    each(this.form,function (i,res) {
+                        var attr=function (attr) {
+                            return res.getAttribute(attr);
+                        };
+                        switch (res.tagName.toLowerCase()){
+                            case "input":
+                                if(res.hasAttribute('name')) val[attr('name')] = res.value;
+                                if(hasValidation(res)) validate[attr('name')] = getValidation(res);
+                                break;
+                            case "textarea":
+                                if(res.hasAttribute('name')) val[attr('name')] = res.value;
+                                if(hasValidation(res)) validate[attr('name')] = getValidation(res);
+                                break;
+                            case "select":
+                                if(res.hasAttribute('name')) val[attr('name')] = res.value;
+                                if(hasValidation(res)) validate[attr('name')] = getValidation(res);
+                        }
+                    });
+                    this.setValidate = validate;
+                    return val;
+                },
+                getValidation : function () {
+                    return this.setValidate;
+                }
+            };
+    Object.defineProperty(Object.prototype, 'getProp',{
+        value : function (str) {
+            var result=null;
+            if(isObject(this) && typeof str === "string"){
+                str = str.split('.');
+                while (str.length) result=this[str.shift()];
+            }
+            return result;
+        },
+        enumerable : false
+    });
 
     var heavenJS = function (inst) {
         var storage ={data:{},request:{},autoRender:true, commandExclusive:true, symbolMapper:{at:"#"}},
             rawTpl;
         // store an object
         if(!isUndef(inst) && isObject(inst)){
+            if(!isUndef(inst.requestHeader)){
+                ajaxHeader = inst.requestHeader;
+                delete inst.requestHeader;
+            }
             if(!isUndef(inst.vData) && isObject(inst.vData)) mObject(inst.vData,storage.data) && delete inst.vData;
             storage = mObject(inst,storage);
         }
@@ -104,7 +156,7 @@
                 storage = mObject(d,storage);
         };
         var setData = function (key,d) {
-                storage.data[key]=d;
+                storage.data[key]=mObject(d,storage.data[key]);
         },
             setRequest = function (key,d) {
                 storage.request[key]=d;
@@ -126,7 +178,7 @@
             if(!isUndef(tpl)) control = control.querySelector(sel);
             var rawHTML = !isUndef(tpl) ? tpl : rawTpl;
             var exp = '<!--:';
-                exp+= '[`~\\@#\\$\\%\\^\\&\\*\\(\\)\\-_=+\\{\\}\\[\\]\\|;:"\'\\<\\,\\>\\.\\?\\/\\w\\s]+';
+                exp+= '[`~\\@#\\$\\%\\^\\&\\*\\(\\)\\-_=+\\{\\}\\[\\]\\|;:"\'\\<\\,\\>\\.\\?\\/\\w\\s\\|]+';
                 exp+= ':-->';
             var re  =new rExp(exp);
             if(re.raw().test(rawHTML)){
@@ -142,12 +194,12 @@
                             index =vOb.get(index);
                             setData(index[1],index[2]);
                         });
-                        var vRe     = new rExp(storage.symbolMapper.at+"([\\w]+) :: \\[([A-Z]+)\\] ([\\w\\?\\/\\@\\#\\$\\%\\&\\*:\\.\\,=]+)");
+                        var vRe     = new rExp(storage.symbolMapper.at+"([\\w]+) :: \\[([A-Z]+)\\] ([\\-\\w\\?\\/\\@\\#\\$\\%\\&\\*:\\.\\,=]+)");
                         vRe.raw().test(rawCode) && vRe.get(rawCode,'g').forEach(function (index) {
                             index = vRe.get(index);
                             setRequest(index[1],{method:index[2],url:index[3]});
                         });
-                        var vFu     = new rExp(/[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\?\{\}\(\)\[\]"`:+\@\*\$\/\.\^\,>%<=\s\w\-]+::end\./);
+                        var vFu     = new rExp(/[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\?\{\}\(\)\[\]"`:+\@\*\$\/\.\^\,>%<=\s\w\-\|\\]+::end\./);
                         vFu.raw().test(rawCode) && vFu.get(rawCode,'g').forEach(function (index) {
                             //forEach
                             var fE = new rExp(/forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
@@ -180,7 +232,7 @@
                             //end forEach
 
                         });
-                        var vEl     = new rExp(/[~\w]+ :: [\w]+\.\s[\?\{\}\(\)\[\]"`:+\@\*\$\/\.\^\,>%<=\s\w\-]+\s::end\./);
+                        var vEl     = new rExp(/[~\w]+ :: [\w]+\.\s[\?\{\}\(\)\[\]"`:+\@\*\$\/\.\^\,>%<=\s\w\-\|\\]+\s::end\./);
                         vEl.raw().test(rawCode) && vEl.get(rawCode,'g').forEach(function (index) {
                             var eL = new rExp(/return :: element\.\s([\w\s\D]+)::end\./);
                             if(eL.raw().test(index)){
@@ -217,38 +269,202 @@
             storage.commandExclusive && commandExclusive();
         }
     };
+    heavenJS.prototype.eventListen=function () {
+        var setData = this.setData,
+            render=this.render,
+            self=this;
+        var eKeyUp =document.querySelector('[eBind\\:keyUp]');
+        if(eKeyUp !== null){
+            var stage;
+            if(!isUndef(stage)) eKeyUp=document.querySelector('[stage="'+stage+'"]').querySelector('[eBind\\:keyUp]');
+            eKeyUp.onkeyup = function () {
+                parentAttr(eKeyUp,function (node) {
+                    stage = node.getAttribute('stage');
+                    var bindKey=eKeyUp.getAttribute('eBind:keyUp'),
+                        bindVal=eKeyUp.value;
+                    setData(bindKey,bindVal);
+                    render('[stage="'+stage+'"]',self);
+                });
+            };
+
+            /*
+            eKeyUp.addEventListener('keyup',);
+            */
+        }
+
+    };
     heavenJS.prototype.control = function (cont) {
         typeof cont === "string" && this.setStorage({control:cont});
         return this;
     };
     heavenJS.prototype.data= function(key,arg){
-        typeof key === "string" && this.setData(key,obj);
+        typeof key === "string" && this.setData(key,arg);
     };
     heavenJS.prototype.request=function(arg,render){
         var self    = this;
-        var req     = new rExp(/^([\w]+) applyTo ([\w]+)/);
+        var req     = new rExp(/^([\w]+) applyTo ([\w]+)$|^([\w]+)$/);
         var storage = this.getStorage(),
             renderTpl = this.render,
             setData   =this.setData;
         if(req.raw().test(arg)){
-            var vO = req.get(arg);
+            var vO = /^([\w]+) applyTo ([\w]+)$/.test(arg) ? arg.match(/^([\w]+) applyTo ([\w]+)$/):
+                arg.match(/^([\w]+)$/);
             if(!isUndef(storage.request[vO[1]])){
                 reqAjax(storage.request[vO[1]],function(res,status){
                     if(status == "success"){
-                        var data = typeof res === "object" ? res : JSON.parse(res);
-                        setData(vO[2],data);
-                        if(!isUndef(render) && typeof render === "string"){
-                            if(/^render\([\w\W]+\)/.test(render)){
-                                render = render.match(/^render\(([\w\W]+)\)/)[1];
-                                renderTpl(render,self);
+                        var rendering=function (render) {
+                            if(typeof render === "string"){
+                                if(/^render\([\w\W]+\)/.test(render)){
+                                    render = render.match(/^render\(([\w\W]+)\)/)[1];
+                                    renderTpl(render,self);
+                                }
+                                else if(/^[\w]+/.test(render))
+                                    renderTpl('[stage="'+render+'"',self);
                             }
-                            else if(/^[\w]+/.test(render))
-                                renderTpl('[stage="'+render+'"',self);
+                        };
+                        var data = typeof res === "object" ? res : JSON.parse(res);
+                        if(!/^([\w]+) applyTo ([\w]+)$/.test(arg)){
+                            render(data);
+                        }else{
+                            if(!isUndef(render) && typeof render === "function"){
+                                render({
+                                    nData : function (nData) {
+                                        if(isObject(nData)) setData(vO[2],mObject(nData,data));
+                                        else setData(vO[2],nData);
+                                    },
+                                    eRender : function (render) {
+                                        var nData={};
+                                        if(isUndef(this.nData)){
+                                            for(var key in this){
+                                                if(key !== 'eRender' || key !==nData) nData[key] = this[key];
+                                            }
+                                            setData(vO[2],mObject(nData,data));
+                                        }
+                                        rendering(render);
+                                    }
+                                },data);
+                            }
+                            else{
+                                setData(vO[2],data);
+                                rendering(render);
+                            }
                         }
                     }
                 });
             }
         }
+    };
+    heavenJS.prototype.form = function (sel,req) {
+        document.querySelector('body')
+            .onsubmit = function (e) {
+            if(e.target.getAttribute('h:submit') === sel){
+                e.preventDefault();
+                tForm = e.target;
+                var nForm = new gForm(tForm.querySelectorAll('[name]'));
+                var fData = nForm.tObject();
+                var vldMess = {};
+                var validation = nForm.getValidation();
+                if(!isUndef(req) && isObject(req)){
+                    req.autoSend = true;
+                    req.notValid = false;
+                    // add rules validation
+                    req.validation = function (vld) {
+                        validation = mObject(vld,validation);
+                    };
+                    //end rules
+                    // before process
+                    if(!isUndef(req.before())) req.before({add:function () {
+                        for(var key in this){
+                            if(typeof this[key] !== "function") fData[key] = this[key];
+                        }
+                    }});
+                    // end before
+                    if(Object.getOwnPropertyNames(validation).length !== 0){
+                        // validator rules
+                        for(var key in validation){
+                            if(fData.hasOwnProperty(key)){
+                                if(typeof validation[key] === "function"){
+                                }
+                                else{
+                                    // looping validation rules
+                                    var res = validation[key].split('|');
+                                    each(res,function (i,val) {
+                                        if(val === "required"){
+                                            var mess = {code:1,message:'field required'};
+                                            if(fData[key].length === 0) {
+                                                if(vldMess.hasOwnProperty(key)) vldMess[key].push(mess);
+                                                else vldMess[key] =  [mess];
+                                            }
+                                        }
+                                        if(/^min:[0-9]+$/.test(val)){
+                                            var min = val.match(/^min:([0-9]+)$/)[1];
+                                            var mess={code:2,message:'field length less than '+min};
+                                            if(fData[key].length < min){
+                                                if(vldMess.hasOwnProperty(key)) vldMess[key].push(mess);
+                                                else vldMess[key] =  [mess];
+                                            }
+                                        }
+                                        if(/^max:[0-9]+$/.test(val)){
+                                            var max = val.match(/^max:([0-9]+)$/)[1];
+                                            var mess={code:3,message:'field length more than '+max};
+                                            if(fData[key].length > max){
+                                                if(vldMess.hasOwnProperty(key)) vldMess[key].push(mess);
+                                                else vldMess[key] =  [mess];
+                                            }
+                                        }
+                                        if(/^eq:[\w]+$/.test(val)){
+                                            var eq = val.match(/^eq:([\w]+)$/)[1];
+                                            var mess={code:4,message:key+ ' not match with '+eq};
+                                            if(fData[key] !== fData[eq]){
+                                                if(vldMess.hasOwnProperty(key)) vldMess[key].push(mess);
+                                                else vldMess[key] =  [mess];
+                                            }
+                                        }
+                                        if(val === 'email' && !/^[_\.\w]+\@[_\.\w]+/.test(fData[key])){
+                                            var mess = {code:5,message:'email field incorrect'};
+                                            if(vldMess.hasOwnProperty(key)) vldMess[key].push(mess);
+                                            else vldMess[key] =  [mess];
+                                        }
+                                        if(/^\[[-+\w]+\]$/.test(val)){
+                                            var exp = new rExp(val+'+');
+                                            var mess = {code:6,message:'field is incorrect'};
+                                            if(!exp.raw().test(fData[key])){
+                                                if(vldMess.hasOwnProperty(key)) vldMess[key].push(mess);
+                                                else vldMess[key] =  [mess];
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        //end validator
+                    }
+                    // if error rules error
+                    if(Object.getOwnPropertyNames(vldMess).length !== 0){
+                        req.notValid = true;
+                        req.validateError = vldMess;
+
+                    }
+                    // end error rules
+                    else{
+                        if(req.autoSend){
+                            var mForm= new gForm(tForm),
+                                fSetup={url:mForm.attr('action'),method:mForm.attr('method'),send:JSON.stringify(fData),
+                                    requestHeader : function (xhttp) {
+                                        xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+                                    }
+                                };
+                            reqAjax(fSetup,function (data,status) {
+                                !isUndef(req.onReceive) && req.onReceive(data,status);
+                            });
+
+                        }
+                    }
+                    !isUndef(req.readyState) && req.readyState();
+                }
+
+            }
+        };
     };
     heavenJS.prototype.render =function(selector,own){
         var parser = new DOMParser,
