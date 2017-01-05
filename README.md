@@ -100,5 +100,23 @@ javascript
     }
     });
     
+## Combine with laravel
+####set up csrf-token. 
 
+add meta tag in html like this
+
+    <meta name="csrf-token" content="{!! csrf_token() !!}">
+    
+setup requestHeader
+    
+    var web = new heavenJS({
+                control:"webApp",
+                requestHeader:function (xhttp) {
+                  xhttp.setRequestHeader("X-CSRF-TOKEN", document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                },
+                data:{
+                  
+                }
+              });
+    
 
