@@ -24,6 +24,24 @@ heavenJS in this version is different, with new code style, heavenJS not leaving
             </div>
         </div>
     </div>
+    
+looping number on forEach
+    
+    ~forEach :: cars as list.
+                    ::loop{1} ::list
+                    ::end.
+                    :-->
+                    
+using javascript expression
+
+    ::js{web === true ? 1 : 0}
+    ::js{web #not true ? "yes" : "not"}
+    
+note : #not as !== 
+
+call javascript function
+
+    ::js{myfuction(1000)};
 
 ### heavenJS call in JavaScript
 
