@@ -141,7 +141,7 @@
 
     var heavenJS = function (inst) {
         var storage ={data:{},request:{},autoRender:true, commandExclusive:true, symbolMapper:{at:"#"}},
-            rawTpl;
+            rawTpl,asset={};
         // store an object
         if(!isUndef(inst) && isObject(inst)){
             if(!isUndef(inst.requestHeader)){
@@ -156,7 +156,8 @@
                 storage = mObject(d,storage);
         };
         var setData = function (key,d) {
-                storage.data[key]=mObject(d,storage.data[key]);
+            if(isObject(d)) storage.data[key]=mObject(d,storage.data[key]);
+            else storage.data[key] =d;
         },
             setRequest = function (key,d) {
                 storage.request[key]=d;
@@ -183,8 +184,6 @@
             var re  =new rExp(exp);
             if(re.raw().test(rawHTML)){
                 var expCode =new rExp(/<!--:([\w\s\D]+):-->/);
-
-
                 re.get(rawHTML,'g').forEach(function (so) {
                     var loop="";
                     if(expCode.raw().test(so)){
@@ -199,21 +198,48 @@
                             index = vRe.get(index);
                             setRequest(index[1],{method:index[2],url:index[3]});
                         });
-                        var vFu     = new rExp(/[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\?\{\}\(\)\[\]"`:+\@\*\$\/\.\^\,>%<=\s\w\-\|\\]+::end\./);
+                        var vFu     = new rExp(/[~\w]+ :: [\w]+ [a-z]+ [\w]+\.\s[\?\{\}\(\)\[\]"`:+\@#\&\*\$\/\.\^\,>%<=\s\w\-\|\\]+::end\./);
                         vFu.raw().test(rawCode) && vFu.get(rawCode,'g').forEach(function (index) {
                             //forEach
                             var fE = new rExp(/forEach :: ([\w]+) as ([\w]+)\.\s([\w\s\D]+)::end\./);
                             if(fE.raw().test(index)){
                                 fE = fE.get(index);
-                                var vO,asIs=fE[2], eL = fE[3];
+                                var vO,asIs=fE[2], eL = fE[3],num;
+                                if(!isUndef(asset[fE[1]]) && !isUndef(asset[fE[1]].num)) num =asset[fE[1]].num;
                                 if(storage.data.hasOwnProperty(fE[1])){
                                     vO = storage.data[fE[1]];
                                     isArray(vO) && vO.forEach(function(v){
                                         var nEl=eL;
-                                        /::[\w]+\.[\.\w]+|::[\w]+/.test(eL) && eL
-                                            .match(/::[\w]+\.[\.\w]+|::[\w]+/g).forEach(function(vE){
+                                        /::[\w]+\.[\.\w]+|::[\w\(\)]+/.test(eL) && eL
+                                            .match(/::[\w]+\.[\.\w]+|::[\w]+\{[ \.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}|::[\w]+/g).forEach(function(vE){
                                                 var vOe;
-                                                if(/::[\w]+\.[\.\w]+/.test(vE)){
+                                                if(/::[\w]+\{[ \.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}/.test(vE)){
+                                                    var vOf = vE.match(/::([\w]+)\{([ \D\w]+)\}/);
+                                                    if(vOf[1] === 'loop'){
+                                                        if(isUndef(num)) num =parseInt(vOf[2]);
+                                                        vOe = num;
+                                                        num++;
+                                                    }else if(vOf[1] === 'js'){
+                                                        var vOb = new rExp(/[a-zA-Z]+[\w\.]+/);
+                                                        vOb.raw().test(vOf[2]) && vOb.get(vOf[2],'g').forEach(function (oL) {
+                                                            var vOl;
+                                                            if(/[\w]+\.[\w\.]+/.test(oL)){
+                                                                vOl = oL.match(/([\w]+)\.([\.\w]+)/);
+                                                                if(asIs === vOl[1]) vOl = v.getProp(vOl[2]);
+                                                                else if(storage.data.hasOwnProperty(vOl[1])) vOl= storage.data[vOl[1]].getProp(vOl[2]);
+                                                            }else{
+                                                                vOl = oL.match(/([\w]+)/)[1];
+                                                                if(asIs === vOl) vOl = v;
+                                                                else if(storage.data.hasOwnProperty(vOl)) vOl = storage.data[vOl]
+                                                            }
+                                                            if(!isUndef(vOl)) vOf[2] = vOf[2].replace(oL,vOl);
+                                                        });
+                                                        if(/\&not/.test(vOf[2])) vOf[2]=vOf[2].replace(/\&not/,'!==');
+                                                        vOe = eval(vOf[2]);
+                                                    }
+
+                                                }
+                                                else if(/::[\w]+\.[\.\w]+/.test(vE)){
                                                     vOe = vE.match(/::([\w]+)\.([\.\w]+)/);
                                                     if(asIs === vOe[1]) vOe = v.getProp(vOe[2]);
                                                     else if(storage.data.hasOwnProperty(vOe[1])) vOe= storage.data[vOe[1]].getProp(vOe[2]);
@@ -232,22 +258,39 @@
                             //end forEach
 
                         });
-                        var vEl     = new rExp(/[~\w]+ :: [\w]+\.\s[\?\{\}\(\)\[\]"`:+\@\*\$\/\.\^\,>%<=\s\w\-\|\\]+\s::end\./);
+                        var vEl     = new rExp(/[~\w]+ :: [\w]+\.\s[\&\#\?\{\}\(\)\[\]"`:+\@\*\$\/\.\^\,>%<=\s\w\-\|\\]+\s::end\./);
                         vEl.raw().test(rawCode) && vEl.get(rawCode,'g').forEach(function (index) {
                             var eL = new rExp(/return :: element\.\s([\w\s\D]+)::end\./);
                             if(eL.raw().test(index)){
                                 eL = eL.get(index);
-                                var patt= new rExp("::([\\w]+)\\.([\\.\\w]+)|::([\\w]+)"),
+                                var patt= new rExp("::([\\w]+)\\.([\\.\\w]+)|::[\\w]+\\{[ \\.><#\\&\\|\"'\\+\\=\\-\\%\\*\\?\\/\\:\\w\\(\\)]+\\}|::([\\w]+)"),
                                     nEl=eL[1];
                                 patt.raw().test(eL[1]) && patt.get(eL[1],'g').forEach(function (v) {
                                     var vI= new rExp(/::([\w]+)/).get(v)[1],vO;
-                                    if(storage.data.hasOwnProperty(vI)){
+                                    if(/::js\{[ \.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}/.test(v)) {
+                                        var vOf = v.match(/::[\w]+\{([ \D\w]+)\}/);
+                                            var vOb = new rExp(/[a-zA-Z]+[\w\.]+/);
+                                            vOb.raw().test(vOf[1]) && vOb.get(vOf[1],'g').forEach(function (oL) {
+                                                var vOl;
+                                                if (/[\w]+\.[\w\.]+/.test(oL)) {
+                                                    vOl = oL.match(/([\w]+)\.([\.\w]+)/);
+                                                    if (storage.data.hasOwnProperty(vOl[1])) vOl = storage.data[vOl[1]].getProp(vOl[2]);
+                                                } else {
+                                                    vOl = oL.match(/([\w]+)/)[1];
+                                                    if (storage.data.hasOwnProperty(vOl)) vOl = storage.data[vOl]
+                                                }
+                                                if (!isUndef(vOl)) vOf[1] = vOf[1].replace(oL, vOl);
+                                            });
+                                            if (/\&not/.test(vOf[1])) vOf[1] = vOf[1].replace(/\&not/, '!==');
+                                            vO = eval(vOf[1]);
+                                    }
+                                    else if(storage.data.hasOwnProperty(vI)){
                                         if(/::[\w]+\.[\.\w]+/.test(v)){
                                             vO = v.match(/::[\w]+\.([\.\w]+)/);
                                             vO = storage.data[vI].getProp(vO[1]);
                                         }else vO=storage.data[vI];
-                                        nEl = nEl.replace(v,vO);
                                     }
+                                    nEl = nEl.replace(v,vO);
                                 });
                                 loop += nEl;
                             }
@@ -264,34 +307,13 @@
         this.getStorage         = getStorage;
         this.getRawTpl          = getRawTpl;
         this.commandExclusive   = commandExclusive;
+        this.asset              = function (key) {
+            return asset[key];
+        };
 
         if(storage.autoRender && !isUndef(storage.control) && typeof storage.control === "string"){
             storage.commandExclusive && commandExclusive();
         }
-    };
-    heavenJS.prototype.eventListen=function () {
-        var setData = this.setData,
-            render=this.render,
-            self=this;
-        var eKeyUp =document.querySelector('[eBind\\:keyUp]');
-        if(eKeyUp !== null){
-            var stage;
-            if(!isUndef(stage)) eKeyUp=document.querySelector('[stage="'+stage+'"]').querySelector('[eBind\\:keyUp]');
-            eKeyUp.onkeyup = function () {
-                parentAttr(eKeyUp,function (node) {
-                    stage = node.getAttribute('stage');
-                    var bindKey=eKeyUp.getAttribute('eBind:keyUp'),
-                        bindVal=eKeyUp.value;
-                    setData(bindKey,bindVal);
-                    render('[stage="'+stage+'"]',self);
-                });
-            };
-
-            /*
-            eKeyUp.addEventListener('keyup',);
-            */
-        }
-
     };
     heavenJS.prototype.control = function (cont) {
         typeof cont === "string" && this.setStorage({control:cont});
@@ -300,7 +322,7 @@
     heavenJS.prototype.data= function(key,arg){
         typeof key === "string" && this.setData(key,arg);
     };
-    heavenJS.prototype.request=function(arg,render,error){
+    heavenJS.prototype.request=function(arg,render){
         var self    = this;
         var req     = new rExp(/^([\w]+) applyTo ([\w]+)$|^([\w]+)$/);
         var storage = this.getStorage(),
@@ -336,7 +358,7 @@
                                         var nData={};
                                         if(isUndef(this.nData)){
                                             for(var key in this){
-                                                if(key !== 'eRender' || key !== 'nData') nData[key] = this[key];
+                                                if(key !== 'eRender' || key !==nData) nData[key] = this[key];
                                             }
                                             setData(vO[2],mObject(nData,data));
                                         }
@@ -349,9 +371,6 @@
                                 rendering(render);
                             }
                         }
-                    }
-                    else{
-                        !isUndef(error) && typeof error === "function" && error(res,status);
                     }
                 });
             }
@@ -468,6 +487,13 @@
 
             }
         };
+    };
+    heavenJS.prototype.helpme=function (data) {
+        data({render:function () {
+            for(var key in this){
+                console.log(key);
+            }
+        }});
     };
     heavenJS.prototype.render =function(selector,own){
         var parser = new DOMParser,
