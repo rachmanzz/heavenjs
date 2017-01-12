@@ -76,7 +76,7 @@ get data from #mybook
     
     hv.request('mybook applyTo book',function(data,response){
             data.name = response.name; // this just work if data is object
-            data.eRender('carsList'); // render to stage of carsList
+            data.eRender('book'); // render to stage of book
         });
         
 request ajax only without applying
