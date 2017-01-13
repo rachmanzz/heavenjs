@@ -58,7 +58,6 @@
     // data parsing
         parentAttr =function (selector,callback) {
             if(selector.parentNode.getAttribute('stage') == null){
-                console.log("is here");
                 parentAttr(selector.parentNode,parent);
             }
             else {
