@@ -210,9 +210,9 @@
                                     isArray(vO) && vO.forEach(function(v){
                                         var nEl=eL;
                                         /::[\w]+\.[\.\w]+|::[\w\(\)]+/.test(eL) && eL
-                                            .match(/::[\w]+\.[\.\w]+|::[\w]+\{[ \.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}|::[\w]+/g).forEach(function(vE){
+                                            .match(/::[\w]+\.[\.\w]+|::[\w]+\{[ \,\.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}|::[\w]+/g).forEach(function(vE){
                                                 var vOe;
-                                                if(/::[\w]+\{[ \.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}/.test(vE)){
+                                                if(/::[\w]+\{[ \,\.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}/.test(vE)){
                                                     var vOf = vE.match(/::([\w]+)\{([ \D\w]+)\}/);
                                                     if(vOf[1] === 'loop'){
                                                         if(isUndef(num)) num =parseInt(vOf[2]);
@@ -262,11 +262,11 @@
                             var eL = new rExp(/return :: element\.\s([\w\s\D]+)::end\./);
                             if(eL.raw().test(index)){
                                 eL = eL.get(index);
-                                var patt= new rExp("::([\\w]+)\\.([\\.\\w]+)|::[\\w]+\\{[ \\.><#\\&\\|\"'\\+\\=\\-\\%\\*\\?\\/\\:\\w\\(\\)]+\\}|::([\\w]+)"),
+                                var patt= new rExp("::([\\w]+)\\.([\\.\\w]+)|::[\\w]+\\{[ \\,\\.><#\\&\\|\"'\\+\\=\\-\\%\\*\\?\\/\\:\\w\\(\\)]+\\}|::([\\w]+)"),
                                     nEl=eL[1];
                                 patt.raw().test(eL[1]) && patt.get(eL[1],'g').forEach(function (v) {
                                     var vI= new rExp(/::([\w]+)/).get(v)[1],vO;
-                                    if(/::js\{[ \.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}/.test(v)) {
+                                    if(/::js\{[ \,\.><#\&\|"'\+\=\-\%\*\?\/\:\w\(\)]+\}/.test(v)) {
                                         var vOf = v.match(/::[\w]+\{([ \D\w]+)\}/);
                                             var vOb = new rExp(/[a-zA-Z]+[\w\.]+/);
                                             vOb.raw().test(vOf[1]) && vOb.get(vOf[1],'g').forEach(function (oL) {
