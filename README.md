@@ -1,5 +1,5 @@
 # heavenJS Beta
-heavenJS in this version is different, with new code style, heavenJS not leaving a pattern again, because heavenJS stand on html command,.
+heavenJS in this version is different, with new code style, heavenJS not leaving a pattern again, because heavenJS stand on html comment,.
  
 ### heavenJS innerHTML
     <div control="webApp">
