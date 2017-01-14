@@ -64,7 +64,14 @@
                 callback(selector.parentNode);
             }
         },
-
+        template   =function (tpl,callback) {
+            var rTpl = new rExp(/::\$tpl\{([\w]+)\}/);
+            if(rTpl.raw().test(tpl)){
+                rTpl.get(tpl,'g').forEach(function (ix) {
+                    callback(rTpl.get(ix));
+                });
+            }
+        },
         rExp    = function(v){
             this.Exp  = v;
             return this;
@@ -139,7 +146,7 @@
     });
 
     var heavenJS = function (inst) {
-        var storage ={data:{},request:{},autoRender:true, commandExclusive:true, symbolMapper:{at:"#"}},
+        var storage ={data:{},request:{},autoRender:true, commandExclusive:true, symbolMapper:{at:"#"},template:{}},
             rawTpl,asset={};
         // store an object
         if(!isUndef(inst) && isObject(inst)){
@@ -206,6 +213,11 @@
                                 var vO,asIs=fE[2], eL = fE[3],num;
                                 if(!isUndef(asset[fE[1]]) && !isUndef(asset[fE[1]].num)) num =asset[fE[1]].num;
                                 if(storage.data.hasOwnProperty(fE[1])){
+                                    template(eL,function (i) {
+                                        if(!isUndef(storage.template[i[1]])){
+                                            eL=eL.replace(i[0],storage.template[i[1]]);
+                                        }
+                                    });
                                     vO = storage.data[fE[1]];
                                     isArray(vO) && vO.forEach(function(v){
                                         var nEl=eL;
@@ -262,6 +274,11 @@
                             var eL = new rExp(/return :: element\.\s([\w\s\D]+)::end\./);
                             if(eL.raw().test(index)){
                                 eL = eL.get(index);
+                                template(eL[1],function (i) {
+                                    if(!isUndef(storage.template[i[1]])){
+                                        eL[1]=eL[1].replace(i[0],storage.template[i[1]]);
+                                    }
+                                });
                                 var patt= new rExp("::([\\w]+)\\.([\\.\\w]+)|::[\\w]+\\{[ \\,\\.><#\\&\\|\"'\\+\\=\\-\\%\\*\\?\\/\\:\\w\\(\\)]+\\}|::([\\w]+)"),
                                     nEl=eL[1];
                                 patt.raw().test(eL[1]) && patt.get(eL[1],'g').forEach(function (v) {
