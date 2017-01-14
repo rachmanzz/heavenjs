@@ -176,6 +176,9 @@
         },
             getRawTpl   = function () {
                 return rawTpl;
+        },
+            setTpl      = function (key,tpl) {
+                storage.template[key] = tpl;
         };
         var commandExclusive=function (sel,tpl) {
             var control = document.querySelector('[control="'+storage.control+'"]');
@@ -323,8 +326,9 @@
         this.getStorage         = getStorage;
         this.getRawTpl          = getRawTpl;
         this.commandExclusive   = commandExclusive;
-        this.asset              = function (key) {
-            return asset[key];
+        this.setTpl             = setTpl;
+        this.asset              = function (key,data) {
+            asset[key] =data;
         };
 
         if(storage.autoRender && !isUndef(storage.control) && typeof storage.control === "string"){
@@ -337,6 +341,9 @@
     };
     heavenJS.prototype.data= function(key,arg){
         typeof key === "string" && this.setData(key,arg);
+    };
+    heavenJS.prototype.tpl=function (key,tpl) {
+        this.setTpl(key,tpl);
     };
     heavenJS.prototype.request=function(arg,render){
         var self    = this;
@@ -503,13 +510,6 @@
 
             }
         };
-    };
-    heavenJS.prototype.helpme=function (data) {
-        data({render:function () {
-            for(var key in this){
-                console.log(key);
-            }
-        }});
     };
     heavenJS.prototype.render =function(selector,own){
         var parser = new DOMParser,
