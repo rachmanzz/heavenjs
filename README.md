@@ -28,9 +28,8 @@ heavenJS in this version is different, with new code style, heavenJS not leaving
 looping number on forEach
     
     ~forEach :: cars as list.
-                    ::loop{1} ::list
-                    ::end.
-                    :-->
+               ::loop{1} ::list
+     ::end.
                     
 using javascript expression
 
