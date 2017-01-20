@@ -31,16 +31,6 @@ looping number on forEach
                ::loop{1} ::list
      ::end.
                     
-using javascript expression
-
-    ::js{web === true ? 1 : 0}
-    ::js{web #not true ? "yes" : "not"}
-    
-note : #not as !== 
-
-call javascript function
-
-    ::js{myfuction(1000)};
 
 ### heavenJS call in JavaScript
 
@@ -137,3 +127,4 @@ setup requestHeader
               });
     
 
+for other function, you can see at https://github.com/rachmanzz/heavenjs/wiki
