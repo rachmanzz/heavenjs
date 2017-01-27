@@ -11,7 +11,7 @@
             return typeof v === "undefined";
         },
         isNull = function(v){
-            return typeof v === "null";
+            return v == "null";
         },
     // chek is array
         isArray =function(v){
