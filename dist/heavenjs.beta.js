@@ -1,9 +1,9 @@
 (function (GLOBAL,MAIN) {
     typeof GLOBAL !== "undefined" ? MAIN(GLOBAL) :
         console.log('heavenJS just support a browser');
-    
+
 })(typeof window !== "undefined" ? window : this, function (__GLOBAL) {
-    var ajaxHeader;
+    var ajaxHeader,loadObject={};
     var isObject=function(v){
             return !Array.isArray(v) ? typeof v === "object" : false;
         },
@@ -39,6 +39,25 @@
             typeof obj.send !== "undefined" ? xhttp.send(obj.send) :
                 xhttp.send();
         },
+        resTemplate = function(){
+          var result = 'null';
+          if(!isUndef(loadObject) && !isUndef(loadObject.template)){
+            if(typeof loadObject.template == 'function'){
+              result = {
+                state : 'single',
+                load : loadObject.template()
+              }
+            }
+
+            if(isArray(loadObject.template)){
+              result = {
+                state : 'multiple',
+                res : loadObject.template
+              }
+            }
+          }
+          return result;
+        }
     // merger Object
         mObject = function(obj,obj1){
             for(var key in obj){
@@ -182,6 +201,19 @@
         };
         var commandExclusive=function (sel,tpl) {
             var control = document.querySelector('[control="'+storage.control+'"]');
+            if(resTemplate() !== 'null'){
+              var parse = new DOMParser;
+              if(resTemplate().state === 'single'){
+                rawTpl = resTemplate().load
+              }
+              if(resTemplate().state === 'multiple'){
+                each(resTemplate().res,function(i,res){
+                  if(res.control === storage.control){
+                    rawTpl = res.load
+                  }
+                })
+              }
+            }
             // chek and set template
             if(isUndef(rawTpl)) rawTpl=control.innerHTML;
             //chek and set selected template
@@ -335,6 +367,9 @@
             storage.commandExclusive && commandExclusive();
         }
     };
+    heavenJS.load = function(o){
+      loadObject = mObject(o,loadObject);
+    }
     heavenJS.prototype.control = function (cont) {
         typeof cont === "string" && this.setStorage({control:cont});
         return this;
