@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # heavenJS Beta ( client side)
 heavenJS in this version is different, with new code style, heavenJS not leaving a pattern again, because heavenJS stand on html comment,.
  
@@ -128,3 +129,47 @@ setup requestHeader
     
 
 for other function, you can see at https://github.com/rachmanzz/heavenjs/wiki
+=======
+# heavenJS Beta ( client side )
+heavenJS is simple library to make view interface of web.
+
+Problem solving
+- http request 
+- looping number
+- template
+- form validation
+ 
+### heavenJS innerHTML
+    <div control="webApp">
+        <div>
+            <div>
+              <select stage="carsList">
+                <!--:
+                forEach :: cars as list.
+                  <option value="::list">::list</option>
+                ::end.
+                :-->
+              </select>
+            </div>
+            <div stage="book">
+                <!--:
+                    return :: element.
+                        <p>hallo,.. I am heavenJS,.. now I am read a ::book.name
+                    ::end.
+                 :-->
+            </div>
+        </div>
+    </div>             
+
+### heavenJS call in JavaScript
+
+    var hv = new heavenJS({
+        control : "webApp",
+        data:{
+          cars:["inova","Jazz"],
+          book:{name:"management Book"}
+        }
+    });    
+
+doc see here https://github.com/rachmanzz/heavenjs/wiki
+>>>>>>> 1dd8385e69953a19cff227b1d588955ee08bca77
